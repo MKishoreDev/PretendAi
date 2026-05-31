@@ -162,7 +162,7 @@
     let lastResult = null;
     let initData = { name: 'Anonymous', mode: null };
 
-    function fmt(s){ s=Math.max(0.s|0); return `${(s/60|0)}:${String(s%60).padStart(2,'0')}`; }
+    function fmt(s){ s=Math.max(0, s|0); return `${(s/60|0)}:${String(s%60).padStart(2,'0')}`; }
     function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
     function tick(){
