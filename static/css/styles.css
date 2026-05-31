@@ -54,7 +54,14 @@ body.play .nav{position:relative;top:auto;}
 body.play .nav{padding:8px 14px;gap:8px;}
 body.play .logo-img{height:36px;width:36px;}
 body.play .logo-text{font-size:20px;}
-@media (max-width:420px){body.play .logo-text{display:none;}}
+@media (max-width:480px){
+  body.play .mode-pill{display:none;}
+  body.play .logo-text{font-size:17px;}
+  body.play .logo-img{height:32px;width:32px;}
+  body.play .timer{font-size:13px;padding:5px 10px;}
+  body.play .theme-toggle{padding:5px 9px;font-size:13px;}
+  body.play #themeToggle{display:none;}
+}
 .nav-right{display:flex;gap:10px;align-items:center}
 .nav nav{display:flex;gap:6px;align-items:center}
 .nav nav a{color:var(--muted);transition:all .2s;font-weight:600;font-size:14px;padding:6px 12px;border-radius:8px}
