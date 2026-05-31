@@ -3,12 +3,10 @@
   --text:#ececf1; --muted:#8b8b9a; --accent:#7c5cff; --accent2:#22d3ee;
   --good:#34d399; --bad:#f87171; --glow:0 0 60px rgba(124,92,255,.35);
   --grad:linear-gradient(135deg,#7c5cff 0%,#22d3ee 60%,#34d399 100%);
-  --logo-pretend:#a78bfa; --logo-ai:#22d3ee;
 }
 html.light-mode {
   --bg:#f9f9fb; --bg2:#f0f0f5; --panel:#ffffff; --panel2:#f8f8fc; --line:#e0e0e8;
   --text:#111111; --muted:#5a5a66; --accent:#6d28d9; --accent2:#0891b2;
-  --logo-pretend:#7c3aed; --logo-ai:#0891b2;
 }
 html.light-mode body {
   background:radial-gradient(1200px 700px at 20% -10%, rgba(124,92,255,.08), transparent 60%),
@@ -38,8 +36,12 @@ button,input,select,textarea{font:inherit;color:inherit}
 .logo-img{height:36px;width:36px;object-fit:contain;display:block;flex-shrink:0}
 @media (max-width:640px){.logo-img{height:30px;width:30px}}
 .logo-text{display:flex;align-items:center;gap:0;font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1;user-select:none}
-.logo-text .pretend{color:var(--logo-pretend)}
-.logo-text .ai{color:var(--logo-ai)}
+/* Dark mode logo */
+.logo-text .pretend{background:linear-gradient(135deg,#c4b5fd 0%,#a78bfa 50%,#8b6bff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo-text .ai{background:linear-gradient(135deg,#7c5cff 0%,#8b6bff 50%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* Light mode logo */
+html.light-mode .logo-text .pretend{background:linear-gradient(135deg,#060814 0%,#0b1020 50%,#111827 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+html.light-mode .logo-text .ai{background:linear-gradient(135deg,#7c5cff 0%,#8b6bff 50%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media (max-width:640px){.logo-text{font-size:18px}}
 
 /* ---------- nav ---------- */
