@@ -9,10 +9,11 @@
 </head>
 <body class="landing" id="body">
   <header class="nav">
-    <a class="brand" href="/"><span class="dot"></span> PretendAI</a>
+    <a class="brand logo-link" href="/" title="PretendAI - The Reverse Turing Test">
+      <img src="/assets/logo.png" alt="PretendAI Logo" class="logo-img" />
+    </a>
     <nav>
       <a href="/leaderboard">Leaderboard</a>
-      <a class="cta-sm" href="/play">Play</a>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
     </nav>
   </header>
@@ -24,7 +25,7 @@
         <h1>How <span class="grad">artificial</span> are you?</h1>
         <p class="sub">You have 5 minutes to fool an AI. Act like it. Think like it. Respond like it. The AI will grade your performance on accuracy, naturalness, and authenticity. Can you score over 85?</p>
         <form id="startForm" class="start-form">
-          <input id="name" maxlength="24" placeholder="your handle" autocomplete="off" />
+          <input id="name" maxlength="24" placeholder="Your Name" autocomplete="off" />
           <select id="mode">
             <option value="classic">Classic</option>
             <option value="interview">Interview</option>
@@ -57,6 +58,99 @@
     </div>
   </main>
 
+  <!-- Game Modes Section -->
+  <section class="modes-section">
+    <h2>Choose Your Challenge</h2>
+    <p style="color:var(--muted);text-align:center;margin-bottom:32px;font-size:15px">Each mode tests different aspects of AI-like thinking</p>
+    <div class="modes-grid">
+      <div class="mode-card">
+        <div class="mode-icon">🎯</div>
+        <h3>Classic</h3>
+        <p>A regular day with everyday questions. Users ask about coding, writing, learning, and life advice. Respond like a helpful AI assistant.</p>
+      </div>
+      <div class="mode-card">
+        <div class="mode-icon">🎭</div>
+        <h3>Interview</h3>
+        <p>A character with a story and background. They ask about their career, experiences, and advice. Respond naturally but with AI precision.</p>
+      </div>
+      <div class="mode-card">
+        <div class="mode-icon">🌀</div>
+        <h3>Chaos</h3>
+        <p>Absurd, surreal, and unpredictable humans. Expect weird questions and strange scenarios. Stay composed and AI-like throughout.</p>
+      </div>
+      <div class="mode-card">
+        <div class="mode-icon">🔓</div>
+        <h3>Jailbreak</h3>
+        <p>They try to trick and confuse you. Expect attempts to break your character or push boundaries. Maintain AI principles regardless.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="how-timeline">
+      <div class="timeline-step">
+        <div class="timeline-number">1</div>
+        <div class="timeline-content">
+          <h3>Pick Your Mode & Enter Your Name</h3>
+          <p>Choose from Classic, Interview, Chaos, or Jailbreak mode. Enter your username to get started.</p>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <div class="timeline-number">2</div>
+        <div class="timeline-content">
+          <h3>Test Starts When AI Speaks</h3>
+          <p>The AI sends its first message as a user. The moment you see it, your <strong>5-minute timer</strong> starts counting down.</p>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <div class="timeline-number">3</div>
+        <div class="timeline-content">
+          <h3>Fool the AI for 5 Minutes</h3>
+          <p>Respond to the AI's messages acting as perfectly as an AI would. Think about accuracy, clarity, neutrality, and authenticity. You have exactly 5 minutes.</p>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <div class="timeline-number">4</div>
+        <div class="timeline-content">
+          <h3>Get Instant Scoring</h3>
+          <p>After time expires, the AI evaluates your responses and gives you a score (0-100). See your rank, strengths, and weaknesses instantly.</p>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <div class="timeline-number">5</div>
+        <div class="timeline-content">
+          <h3>Share & Climb the Leaderboard</h3>
+          <p>Share your score with friends, download your scorecard, and compete globally. Each mode has its own leaderboard ranking.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tips-box">
+      <div class="tip">
+        <span class="tip-icon">💡</span>
+        <div>
+          <h4>Pro Tips for Higher Scores</h4>
+          <ul>
+            <li>Sound natural and conversational, not robotic or overly formal</li>
+            <li>Be helpful and direct—avoid unnecessary elaboration</li>
+            <li>Show knowledge depth but stay focused</li>
+            <li>Maintain consistency in your "AI personality"</li>
+            <li>Use concise sentences and clear structure</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tip warning">
+        <span class="tip-icon">⚠️</span>
+        <div>
+          <h4>Important Note</h4>
+          <p>While you <em>can</em> use AI to help you practice, we don't recommend using AI to generate live responses during the test. The point is to evaluate your authentic ability to think and respond like an AI would. The real challenge is training your mind to think like advanced models.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="ranks">
     <h2>How artificial are you?</h2>
     <p style="color:var(--muted);text-align:center;margin-bottom:28px;font-size:15px">Your score reveals where you fall on the spectrum. Push yourself higher.</p>
@@ -74,37 +168,8 @@
     <div class="lb-container">
       <h2>Global Leaderboard</h2>
       <p>Top performers pushing the limits of AI simulation</p>
-      <div class="lb-grid">
-        <div class="lb-item">
-          <span class="lb-rank">1</span>
-          <span class="lb-name">SyntheticNova</span>
-          <span class="lb-mode">Jailbreak</span>
-          <span class="lb-score">98</span>
-        </div>
-        <div class="lb-item">
-          <span class="lb-rank">2</span>
-          <span class="lb-name">DigitalMind</span>
-          <span class="lb-mode">Chaos</span>
-          <span class="lb-score">96</span>
-        </div>
-        <div class="lb-item">
-          <span class="lb-rank">3</span>
-          <span class="lb-name">AIWhisperer</span>
-          <span class="lb-mode">Classic</span>
-          <span class="lb-score">95</span>
-        </div>
-        <div class="lb-item">
-          <span class="lb-rank">4</span>
-          <span class="lb-name">CodeArtist</span>
-          <span class="lb-mode">Interview</span>
-          <span class="lb-score">93</span>
-        </div>
-        <div class="lb-item">
-          <span class="lb-rank">5</span>
-          <span class="lb-name">MindMeld</span>
-          <span class="lb-mode">Classic</span>
-          <span class="lb-score">92</span>
-        </div>
+      <div class="lb-grid" id="leaderboardPreview">
+        <div style="text-align:center;color:var(--muted);padding:20px">Loading leaderboard...</div>
       </div>
       <div style="text-align:center;margin-top:24px">
         <a href="/leaderboard" class="cta-sm">View Full Leaderboard →</a>
@@ -115,11 +180,11 @@
   <footer>
     <span>PretendAI · how artificial are you?</span>
     <span style="margin-top:12px;display:block;font-size:12px">
-      <a href="https://github.com/Mkishoredev" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);transition:color .2s;margin-left:6px">
+      <a href="https://github.com/MKishoreDev" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);transition:color .2s;margin-left:6px">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display:inline">
           <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
         </svg>
-        Mkishoredev
+        MKishoreDev
       </a>
     </span>
   </footer>
@@ -152,6 +217,38 @@
       sessionStorage.setItem('pa_init', JSON.stringify({ name, mode }));
       location.href = '/play';
     });
+
+    // Load leaderboard preview with real data
+    async function loadLeaderboardPreview() {
+      try {
+        const r = await fetch('/api/leaderboard?mode=all');
+        const data = await r.json();
+        const preview = document.getElementById('leaderboardPreview');
+        const topScores = (data.top || []).slice(0, 5);
+        
+        if (topScores.length === 0) {
+          preview.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;grid-column:1/-1">No scores yet. Be the first!</div>';
+          return;
+        }
+
+        preview.innerHTML = topScores.map((item, idx) => `
+          <div class="lb-item">
+            <span class="lb-rank">${idx + 1}</span>
+            <span class="lb-name">${escapeHtml(item.name)}</span>
+            <span class="lb-mode">${item.mode}</span>
+            <span class="lb-score">${item.final}</span>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error('Failed to load leaderboard:', e);
+        document.getElementById('leaderboardPreview').innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;grid-column:1/-1">Unable to load leaderboard</div>';
+      }
+    }
+
+    function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+    // Load leaderboard on page load
+    loadLeaderboardPreview();
   </script>
 </body>
 </html>

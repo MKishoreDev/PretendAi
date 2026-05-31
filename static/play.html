@@ -5,21 +5,29 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>PretendAI · live test</title>
 <link rel="stylesheet" href="/static/css/styles.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body class="play" id="body">
   <header class="nav">
-    <a class="brand" href="/"><span class="dot"></span> PretendAI</a>
+    <a class="brand logo-link" href="/" title="PretendAI - The Reverse Turing Test">
+      <img src="/assets/logo.png" alt="PretendAI Logo" class="logo-img" />
+    </a>
     <div style="display:flex;gap:12px;align-items:center;flex:1;justify-content:flex-end">
       <div class="mode-pill" id="modePill">classic</div>
       <div class="timer" id="timer">5:00</div>
-      <nav>
-        <a href="/">Home</a>
-        <a href="/leaderboard">Leaderboard</a>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
-      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
     </div>
   </header>
+
+  <!-- Mobile Menu -->
+  <nav class="mobile-menu hidden" id="mobileMenu">
+    <a href="/">Home</a>
+    <a href="/leaderboard">Leaderboard</a>
+    <button class="theme-toggle" id="themeToggleMobile" aria-label="Toggle theme">🌙</button>
+  </nav>
 
   <main class="chat-wrap">
     <div id="chat" class="chat"></div>
@@ -35,7 +43,7 @@
     <div class="result-card">
       <h2 style="margin:0 0 6px;letter-spacing:-.02em">Pick your arena</h2>
       <p class="verdict">Each mode changes the human the AI pretends to be.</p>
-      <input id="modeName" maxlength="24" placeholder="your handle" class="m-input" />
+      <input id="modeName" maxlength="24" placeholder="Your Name" class="m-input" />
       <div class="mode-grid">
         <button class="mode-btn" data-mode="classic"><b>Classic</b><span>Everyday questions</span></button>
         <button class="mode-btn" data-mode="interview"><b>Interview</b><span>A character with a story</span></button>
@@ -58,10 +66,10 @@
         <div><h4>Weaknesses</h4><ul id="rWeak"></ul></div>
       </div>
       <div class="actions">
-        <a href="/play" class="btn">Try again</a>
+        <a href="/" class="btn">Try again</a>
         <a href="/leaderboard" class="btn ghost">Leaderboard</a>
         <button id="cardBtn" class="btn" type="button">Download score card</button>
-        <button id="shareBtn" class="btn ghost" type="button">Share 🚀</button>
+        <button id="shareBtn" class="btn ghost" type="button">Share with friends 🚀</button>
         <button id="chatBtn" class="btn ghost" type="button">Download chat</button>
       </div>
     </div>
@@ -100,22 +108,38 @@
     function initTheme(){
       const isDark = localStorage.getItem('pretendai-theme') !== 'light';
       const html = document.documentElement;
-      const toggle = document.getElementById('themeToggle');
+      const toggles = [document.getElementById('themeToggle'), document.getElementById('themeToggleMobile')];
       
       if (!isDark) html.classList.add('light-mode');
       
-      toggle.addEventListener('click', () => {
-        const isLight = html.classList.contains('light-mode');
-        html.classList.toggle('light-mode');
-        localStorage.setItem('pretendai-theme', isLight ? 'dark' : 'light');
-        toggle.textContent = isLight ? '🌙' : '☀️';
+      toggles.forEach(toggle => {
+        if (!toggle) return;
+        toggle.addEventListener('click', () => {
+          const isLight = html.classList.contains('light-mode');
+          html.classList.toggle('light-mode');
+          localStorage.setItem('pretendai-theme', isLight ? 'dark' : 'light');
+          const newText = isLight ? '🌙' : '☀️';
+          toggles.forEach(t => { if (t) t.textContent = newText; });
+        });
+        toggle.textContent = isDark ? '🌙' : '☀️';
       });
-      
-      toggle.textContent = isDark ? '🌙' : '☀️';
     }
     initTheme();
 
+    // Mobile Menu Toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    menuToggle.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
 
+    // Close menu when clicking a link
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+      });
+    });
   </script>
 
   <script>
@@ -138,7 +162,7 @@
     let lastResult = null;
     let initData = { name: 'Anonymous', mode: null };
 
-    function fmt(s){ s=Math.max(0,s|0); return `${(s/60|0)}:${String(s%60).padStart(2,'0')}`; }
+    function fmt(s){ s=Math.max(0.s|0); return `${(s/60|0)}:${String(s%60).padStart(2,'0')}`; }
     function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
     function tick(){
@@ -274,6 +298,42 @@
       if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); }
     });
 
+    // Block copy/paste during test to prevent AI usage
+    input.addEventListener('copy', (e) => {
+      if (session && !finished) {
+        e.preventDefault();
+        Toastify({
+          text: 'Copy is disabled during the test. Type your own response! 🤖',
+          duration: 2000,
+          gravity: 'top',
+          position: 'center',
+          style: {
+            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            borderRadius: '8px',
+            padding: '12px 20px',
+            fontWeight: '500'
+          }
+        }).showToast();
+      }
+    });
+    input.addEventListener('paste', (e) => {
+      if (session && !finished) {
+        e.preventDefault();
+        Toastify({
+          text: 'Paste is disabled during the test. Write it yourself! 🤖',
+          duration: 2000,
+          gravity: 'top',
+          position: 'center',
+          style: {
+            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            borderRadius: '8px',
+            padding: '12px 20px',
+            fontWeight: '500'
+          }
+        }).showToast();
+      }
+    });
+
     // End button with warning modal
     endBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -307,7 +367,18 @@
         showResult(lastResult);
       } catch (err) {
         document.getElementById('loadingOverlay').classList.add('hidden');
-        alert('Something happened, try again in a few minutes.');
+        Toastify({
+          text: 'Something happened, try again in a few minutes.',
+          duration: 4000,
+          gravity: 'top',
+          position: 'center',
+          style: {
+            background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+            borderRadius: '8px',
+            padding: '16px 24px',
+            fontWeight: '500'
+          }
+        }).showToast();
       }
     }
 
@@ -399,7 +470,18 @@
         a.href = dataUrl; a.download = filename; a.click();
       } catch (e){
         console.error(e);
-        alert('Could not export image. Try again.');
+        Toastify({
+          text: 'Could not export image. Try again.',
+          duration: 3000,
+          gravity: 'top',
+          position: 'center',
+          style: {
+            background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+            borderRadius: '8px',
+            padding: '16px 24px',
+            fontWeight: '500'
+          }
+        }).showToast();
       } finally {
         document.getElementById('exportRoot').innerHTML = '';
       }
@@ -428,7 +510,36 @@
       } else {
         const node = buildScoreCard(res);
         nodeToPng(node, `pretendai-score-${res.final||0}.png`).then(() => {
-          alert(`Share this image with the caption:\n\n${caption}`);
+          // Copy to clipboard
+          navigator.clipboard.writeText(caption).then(() => {
+            Toastify({
+              text: 'Caption copied! Share the image with this text 📋',
+              duration: 4000,
+              gravity: 'top',
+              position: 'center',
+              style: {
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                borderRadius: '8px',
+                padding: '16px 24px',
+                fontWeight: '500',
+                maxWidth: '80vw'
+              }
+            }).showToast();
+          }).catch(() => {
+            Toastify({
+              text: caption,
+              duration: 6000,
+              gravity: 'top',
+              position: 'center',
+              style: {
+                background: 'linear-gradient(135deg, #7c5cff 0%, #5f3dc4 100%)',
+                borderRadius: '8px',
+                padding: '16px 24px',
+                fontWeight: '500',
+                maxWidth: '80vw'
+              }
+            }).showToast();
+          });
         });
       }
     }
