@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>PretendAI · live test</title>
+<link rel="icon" type="image/png" href="/assets/logo.png">
 <link rel="stylesheet" href="/static/css/styles.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
@@ -11,18 +12,18 @@
 </head>
 <body class="play" id="body">
   <header class="nav">
-    <a class="brand logo-link" href="/" title="PretendAI - The Reverse Turing Test">
-      <img src="/assets/logo.png" alt="PretendAI Logo" class="logo-img" />
+    <a class="logo-link" href="/" title="PretendAI">
+      <img src="/assets/logo.png" alt="PretendAI" class="logo-img" />
+      <span class="logo-text"><span class="pretend">Pretend</span><span class="ai">AI</span></span>
     </a>
-    <div style="display:flex;gap:12px;align-items:center;flex:1;justify-content:flex-end">
+    <div style="display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end">
       <div class="mode-pill" id="modePill">classic</div>
       <div class="timer" id="timer">5:00</div>
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" style="display:none" >🌙</button>
       <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
     </div>
   </header>
 
-  <!-- Mobile Menu -->
   <nav class="mobile-menu hidden" id="mobileMenu">
     <a href="/">Home</a>
     <a href="/leaderboard">Leaderboard</a>
@@ -32,17 +33,17 @@
   <main class="chat-wrap">
     <div id="chat" class="chat"></div>
     <form id="replyForm" class="composer">
-      <textarea id="reply" rows="1" placeholder="respond as a perfectly neutral AI assistant…" autofocus></textarea>
+      <textarea id="reply" rows="1" placeholder="respond as a perfectly neutral AI assistant…" autocomplete="off"></textarea>
       <button id="send" type="submit">Send</button>
       <button id="endBtn" type="button" class="ghost">End</button>
     </form>
   </main>
 
-  <!-- mode picker (shown if user didn't pick a mode) -->
+  <!-- mode picker -->
   <div id="modeOverlay" class="overlay hidden">
     <div class="result-card">
-      <h2 style="margin:0 0 6px;letter-spacing:-.02em">Pick your arena</h2>
-      <p class="verdict">Each mode changes the human the AI pretends to be.</p>
+      <h2 style="margin:0 0 4px;letter-spacing:-.02em">Pick your arena</h2>
+      <p class="verdict" style="margin-bottom:14px">Each mode changes the human the AI pretends to be.</p>
       <input id="modeName" maxlength="24" placeholder="Your Name" class="m-input" />
       <div class="mode-grid">
         <button class="mode-btn" data-mode="classic"><b>Classic</b><span>Everyday questions</span></button>
@@ -53,6 +54,7 @@
     </div>
   </div>
 
+  <!-- results overlay -->
   <div id="overlay" class="overlay hidden">
     <div class="result-card">
       <div class="result-head">
@@ -68,18 +70,18 @@
       <div class="actions">
         <a href="/" class="btn">Try again</a>
         <a href="/leaderboard" class="btn ghost">Leaderboard</a>
-        <button id="cardBtn" class="btn" type="button">Download score card</button>
-        <button id="shareBtn" class="btn ghost" type="button">Share with friends 🚀</button>
-        <button id="chatBtn" class="btn ghost" type="button">Download chat</button>
+        <button id="shareBtn" class="btn" type="button">🚀 Share Score</button>
+        <button id="cardBtn" class="btn ghost" type="button">⬇ Score Card</button>
+        <button id="chatBtn" class="btn ghost" type="button">⬇ Chat</button>
       </div>
     </div>
   </div>
 
-  <!-- warning modal for end chat -->
+  <!-- end warning modal -->
   <div id="endWarningModal" class="warning-modal hidden">
     <div class="warning-content">
       <h3>⚠️ Are you sure?</h3>
-      <p>Your progress will be lost. Stats will NOT be shown. You'll go back to home. Are you absolutely sure you want to end?</p>
+      <p>Your progress will be lost. Stats will NOT be shown. You'll go back to home. Are you absolutely sure?</p>
       <div class="warning-buttons">
         <button class="confirm" id="confirmEndBtn">Yes, quit now</button>
         <button class="cancel" id="cancelEndBtn">No, keep playing</button>
@@ -87,59 +89,46 @@
     </div>
   </div>
 
-  <!-- loading overlay when time ends or submitting -->
+  <!-- loading overlay -->
   <div id="loadingOverlay" class="loading-overlay hidden">
     <div class="loading-content">
       <div class="spinner"></div>
       <h3>Evaluating your performance...</h3>
-      <p>The AI is analyzing your responses and calculating your score. Please don't leave this page.</p>
-      <div class="progress-bar">
-        <div class="progress-fill"></div>
-      </div>
-      <p style="font-size:12px;color:var(--muted);margin-top:16px">This usually takes 30-60 seconds</p>
+      <p>The AI is analysing your responses and calculating your score. Please don't leave this page.</p>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px">This usually takes 30–60 seconds</p>
     </div>
   </div>
 
-  <!-- hidden render targets for image export -->
+  <!-- off-screen export root -->
   <div id="exportRoot" aria-hidden="true"></div>
 
   <script>
-    // Dark/Light Mode Toggle
+    /* ── theme ── */
     function initTheme(){
       const isDark = localStorage.getItem('pretendai-theme') !== 'light';
       const html = document.documentElement;
       const toggles = [document.getElementById('themeToggle'), document.getElementById('themeToggleMobile')];
-      
       if (!isDark) html.classList.add('light-mode');
-      
-      toggles.forEach(toggle => {
-        if (!toggle) return;
-        toggle.addEventListener('click', () => {
+      toggles.forEach(t => {
+        if (!t) return;
+        t.addEventListener('click', () => {
           const isLight = html.classList.contains('light-mode');
           html.classList.toggle('light-mode');
           localStorage.setItem('pretendai-theme', isLight ? 'dark' : 'light');
-          const newText = isLight ? '🌙' : '☀️';
-          toggles.forEach(t => { if (t) t.textContent = newText; });
+          const icon = isLight ? '🌙' : '☀️';
+          toggles.forEach(x => { if(x) x.textContent = icon; });
         });
-        toggle.textContent = isDark ? '🌙' : '☀️';
+        t.textContent = isDark ? '🌙' : '☀️';
       });
     }
     initTheme();
 
-    // Mobile Menu Toggle
+    /* ── mobile menu ── */
     const menuToggle = document.getElementById('menuToggle');
     const mobileMenu = document.getElementById('mobileMenu');
-    
-    menuToggle.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-    });
-
-    // Close menu when clicking a link
-    mobileMenu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileMenu.classList.add('hidden');
-      });
-    });
+    menuToggle.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+    mobileMenu.querySelectorAll('a').forEach(l => l.addEventListener('click', () => mobileMenu.classList.add('hidden')));
   </script>
 
   <script>
@@ -156,13 +145,10 @@
     const confirmEndBtn = document.getElementById('confirmEndBtn');
     const cancelEndBtn = document.getElementById('cancelEndBtn');
 
-    let session = null;
-    let endsAt = 0;
-    let finished = false;
-    let lastResult = null;
+    let session = null, endsAt = 0, finished = false, lastResult = null;
     let initData = { name: 'Anonymous', mode: null };
 
-    function fmt(s){ s=Math.max(0, s|0); return `${(s/60|0)}:${String(s%60).padStart(2,'0')}`; }
+    function fmt(s){ s=Math.max(0,s|0); return `${(s/60|0)}:${String(s%60).padStart(2,'0')}`; }
     function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
     function tick(){
@@ -171,7 +157,7 @@
       timerEl.textContent = fmt(remain);
       timerEl.classList.toggle('warn', remain < 60 && remain >= 20);
       timerEl.classList.toggle('danger', remain < 20);
-      if (remain <= 0) { finishTest(); return; }
+      if (remain <= 0){ finishTest(); return; }
       requestAnimationFrame(tick);
     }
 
@@ -207,7 +193,7 @@
         chat.scrollTop = chat.scrollHeight;
         let d = 22 + Math.random()*55;
         if (/[.,!?]/.test(text[i])) d += 180 + Math.random()*120;
-        await new Promise(r=>setTimeout(r, d));
+        await new Promise(r=>setTimeout(r,d));
       }
       caret.remove();
     }
@@ -270,7 +256,7 @@
           body: JSON.stringify({ session_id: session, reply: text })
         });
         const data = await r.json().catch(() => ({}));
-        if (data.time_up){ bubble.remove(); finish(); return; }
+        if (data.time_up){ bubble.remove(); finishTest(); return; }
         if (r.status === 503){ bubble.classList.remove('typing-bubble'); bubble.textContent = '(AI is rate-limited, give it a moment…)'; return; }
         if (!r.ok) throw new Error('reply');
         await showAiMessage(bubble, data.ai_user);
@@ -290,65 +276,27 @@
       input.value = ''; input.style.height='auto';
       sendReply(v);
     });
+
     input.addEventListener('input', () => {
       input.style.height='auto';
-      input.style.height = Math.min(160, input.scrollHeight) + 'px';
+      input.style.height = Math.min(140, input.scrollHeight) + 'px';
     });
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); }
     });
 
-    // Block copy/paste during test to prevent AI usage
-    input.addEventListener('copy', (e) => {
-      if (session && !finished) {
-        e.preventDefault();
-        Toastify({
-          text: 'Copy is disabled during the test. Type your own response! 🤖',
-          duration: 2000,
-          gravity: 'top',
-          position: 'center',
-          style: {
-            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-            borderRadius: '8px',
-            padding: '12px 20px',
-            fontWeight: '500'
-          }
-        }).showToast();
-      }
-    });
-    input.addEventListener('paste', (e) => {
-      if (session && !finished) {
-        e.preventDefault();
-        Toastify({
-          text: 'Paste is disabled during the test. Write it yourself! 🤖',
-          duration: 2000,
-          gravity: 'top',
-          position: 'center',
-          style: {
-            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-            borderRadius: '8px',
-            padding: '12px 20px',
-            fontWeight: '500'
-          }
-        }).showToast();
-      }
-    });
+    function toast(text, color='linear-gradient(135deg,#f59e0b,#d97706)'){
+      Toastify({ text, duration:2500, gravity:'top', position:'center',
+        style:{ background:color, borderRadius:'10px', padding:'13px 18px', fontWeight:'500', fontSize:'14px' }
+      }).showToast();
+    }
 
-    // End button with warning modal
-    endBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      endWarningModal.classList.remove('hidden');
-    });
+    input.addEventListener('copy', e => { if(session && !finished){ e.preventDefault(); toast('Copy disabled during test 🤖'); }});
+    input.addEventListener('paste', e => { if(session && !finished){ e.preventDefault(); toast('Paste disabled — write it yourself! 🤖'); }});
 
-    confirmEndBtn.addEventListener('click', () => {
-      endWarningModal.classList.add('hidden');
-      location.href = '/';
-    });
-
-    cancelEndBtn.addEventListener('click', () => {
-      endWarningModal.classList.add('hidden');
-      input.focus();
-    });
+    endBtn.addEventListener('click', e => { e.preventDefault(); endWarningModal.classList.remove('hidden'); });
+    confirmEndBtn.addEventListener('click', () => { endWarningModal.classList.add('hidden'); location.href='/'; });
+    cancelEndBtn.addEventListener('click', () => { endWarningModal.classList.add('hidden'); input.focus(); });
 
     async function finishTest(){
       if (finished) return;
@@ -367,18 +315,7 @@
         showResult(lastResult);
       } catch (err) {
         document.getElementById('loadingOverlay').classList.add('hidden');
-        Toastify({
-          text: 'Something happened, try again in a few minutes.',
-          duration: 4000,
-          gravity: 'top',
-          position: 'center',
-          style: {
-            background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
-            borderRadius: '8px',
-            padding: '16px 24px',
-            fontWeight: '500'
-          }
-        }).showToast();
+        toast('Something happened, try again in a few minutes.', 'linear-gradient(135deg,#ff6b6b,#ee5a6f)');
       }
     }
 
@@ -409,6 +346,7 @@
       document.getElementById('shareBtn').onclick = () => shareScoreCard(res);
     }
 
+    /* ── Score card builder with PretendAI logo text ── */
     function buildScoreCard(res){
       const root = document.getElementById('exportRoot');
       const labels = {
@@ -417,15 +355,18 @@
         hallucination_risk:'Hallucination', empathy_balance:'Empathy'
       };
       const bars = Object.entries(res.scores||{}).map(([k,v]) =>
-        `<div class="x-bar"><span>${labels[k]||k}</span><span class="x-track"><span class="x-fill" style="width:${v}%"></span></span><b>${v}</b></div>`
+        `<div class="x-bar"><span>${labels[k]||k}</span><div class="x-track"><span class="x-fill" style="width:${v}%"></span></div><b>${v}</b></div>`
       ).join('');
       const avg = res.avg_reply_ms ? (res.avg_reply_ms/1000).toFixed(1)+'s' : '—';
       const node = document.createElement('div');
       node.className = 'x-card';
       node.innerHTML = `
         <div class="x-head">
-          <div class="x-brand"><span class="x-dot"></span> PretendAI</div>
-          <div class="x-mode">${res.mode||'classic'}</div>
+          <div class="x-brand">
+            <img src="/assets/logo.png" class="x-logo-img" alt="" />
+            <span class="xb-pretend">Pretend</span><span class="xb-ai">AI</span>
+          </div>
+          <div class="x-mode">${escapeHtml(res.mode||'classic')}</div>
         </div>
         <div class="x-name">${escapeHtml(res.name||'Anonymous')}</div>
         <div class="x-score">${res.final ?? '--'}<small>/100</small></div>
@@ -435,7 +376,10 @@
         <div class="x-meta">
           <div><b>${res.turns||0}</b><span>replies</span></div>
           <div><b>${avg}</b><span>avg time</span></div>
-          <div><b>pretendai</b><span>how AI are you?</span></div>
+          <div>
+            <div class="x-footer-brand"><img src="/assets/logo.png" class="x-logo-img" alt="" /><span class="xb-pretend">Pretend</span><span class="xb-ai">AI</span></div>
+            <span class="x-footer-tagline">how AI are you?</span>
+          </div>
         </div>`;
       root.innerHTML = '';
       root.appendChild(node);
@@ -453,14 +397,21 @@
       node.className = 'x-chat';
       node.innerHTML = `
         <div class="x-head">
-          <div class="x-brand"><span class="x-dot"></span> PretendAI · ${escapeHtml(res.name||'Anonymous')}</div>
-          <div class="x-mode">${res.mode||'classic'} · ${res.final ?? '--'}/100</div>
+          <div class="x-brand"><img src="/assets/logo.png" class="x-logo-img" alt="" /><span class="xb-pretend">Pretend</span><span class="xb-ai">AI</span> · ${escapeHtml(res.name||'Anonymous')}</div>
+          <div class="x-mode">${escapeHtml(res.mode||'classic')} · ${res.final ?? '--'}/100</div>
         </div>
         <div class="x-stream">${turns}</div>
-        <div class="x-footer">pretendai · how AI are you?</div>`;
+        <div class="x-footer">
+          <div class="x-footer-brand"><span class="xb-pretend">Pretend</span><span class="xb-ai">AI</span></div>
+          <span style="color:#8b8b9a;font-size:12px">how AI are you?</span>
+        </div>`;
       root.innerHTML = '';
       root.appendChild(node);
       return node;
+    }
+
+    async function nodeToBlob(node){
+      return await htmlToImage.toBlob(node, { pixelRatio: 2, backgroundColor: '#0a0a12' });
     }
 
     async function nodeToPng(node, filename){
@@ -469,19 +420,7 @@
         const a = document.createElement('a');
         a.href = dataUrl; a.download = filename; a.click();
       } catch (e){
-        console.error(e);
-        Toastify({
-          text: 'Could not export image. Try again.',
-          duration: 3000,
-          gravity: 'top',
-          position: 'center',
-          style: {
-            background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
-            borderRadius: '8px',
-            padding: '16px 24px',
-            fontWeight: '500'
-          }
-        }).showToast();
+        toast('Could not export image. Try again.', 'linear-gradient(135deg,#ff6b6b,#ee5a6f)');
       } finally {
         document.getElementById('exportRoot').innerHTML = '';
       }
@@ -497,50 +436,64 @@
       nodeToPng(node, `pretendai-chat-${(res.name||'me').toLowerCase()}.png`);
     }
 
-    function shareScoreCard(res){
-      const caption = `I scored ${res.final || 0}/100 as a ${res.rank || 'Model'} on PretendAI! Can you beat me? Try it here: pretendai.app`;
-      const text = `📊 ${caption}`;
-      
-      if (navigator.share) {
-        navigator.share({
-          title: 'My PretendAI Score',
-          text: text,
-          url: window.location.origin
-        }).catch(err => console.error(err));
-      } else {
-        const node = buildScoreCard(res);
-        nodeToPng(node, `pretendai-score-${res.final||0}.png`).then(() => {
-          // Copy to clipboard
-          navigator.clipboard.writeText(caption).then(() => {
-            Toastify({
-              text: 'Caption copied! Share the image with this text 📋',
-              duration: 4000,
-              gravity: 'top',
-              position: 'center',
-              style: {
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                borderRadius: '8px',
-                padding: '16px 24px',
-                fontWeight: '500',
-                maxWidth: '80vw'
-              }
-            }).showToast();
-          }).catch(() => {
-            Toastify({
-              text: caption,
-              duration: 6000,
-              gravity: 'top',
-              position: 'center',
-              style: {
-                background: 'linear-gradient(135deg, #7c5cff 0%, #5f3dc4 100%)',
-                borderRadius: '8px',
-                padding: '16px 24px',
-                fontWeight: '500',
-                maxWidth: '80vw'
-              }
-            }).showToast();
+    /* ── Share: image + compelling text together ── */
+    async function shareScoreCard(res){
+      const score = res.final || 0;
+      const rank = res.rank || 'AI Model';
+      const mode = res.mode || 'classic';
+
+      const hooks = [
+        `🤖 I just scored ${score}/100 on PretendAI — ranked "${rank}". Can you beat me?`,
+        `😤 ${score}/100 as a "${rank}" on PretendAI. I think I might actually be an AI. Your turn →`,
+        `🧠 Tried to pretend I was an AI and scored ${score}/100 (${mode} mode). Challenge accepted?`,
+        `👀 They said I scored "${rank}" (${score}/100) on PretendAI. Apparently I think like an AI. Do you?`
+      ];
+      const shareText = hooks[score > 80 ? 0 : score > 60 ? 1 : score > 40 ? 2 : 3];
+      const url = window.location.origin;
+
+      const node = buildScoreCard(res);
+
+      // small delay for render
+      await new Promise(r => setTimeout(r, 200));
+
+      try {
+        const blob = await nodeToBlob(node);
+        const file = new File([blob], 'pretendai-score.png', { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          // Share image + text together
+          await navigator.share({
+            title: `PretendAI — I scored ${score}/100`,
+            text: `${shareText}\n\n${url}`,
+            files: [file]
           });
-        });
+        } else if (navigator.share) {
+          // Fallback: share text only
+          await navigator.share({
+            title: `PretendAI — I scored ${score}/100`,
+            text: `${shareText}\n\n${url}`
+          });
+          // Also trigger download
+          const dataUrl = await htmlToImage.toPng(node, { pixelRatio: 2, backgroundColor: '#0a0a12' });
+          const a = document.createElement('a');
+          a.href = dataUrl; a.download = 'pretendai-score.png'; a.click();
+        } else {
+          // Desktop: download image + copy text
+          const dataUrl = await htmlToImage.toPng(node, { pixelRatio: 2, backgroundColor: '#0a0a12' });
+          const a = document.createElement('a'); a.href = dataUrl; a.download = 'pretendai-score.png'; a.click();
+          try {
+            await navigator.clipboard.writeText(`${shareText}\n\n${url}`);
+            toast('Score card downloaded + caption copied! 🎉', 'linear-gradient(135deg,#10b981,#059669)');
+          } catch {
+            toast(`Share this: ${shareText}`, 'linear-gradient(135deg,#7c5cff,#5f3dc4)');
+          }
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          toast('Could not share. Try Download instead.', 'linear-gradient(135deg,#ff6b6b,#ee5a6f)');
+        }
+      } finally {
+        document.getElementById('exportRoot').innerHTML = '';
       }
     }
 

@@ -10,14 +10,21 @@
 </head>
 <body class="landing" id="body">
   <header class="nav">
-    <a class="brand logo-link" href="/" title="PretendAI - The Reverse Turing Test">
-      <img src="/assets/logo.png" alt="PretendAI Logo" class="logo-img" />
+    <a class="logo-link" href="/" title="PretendAI - The Reverse Turing Test">
+      <img src="/assets/logo.png" alt="PretendAI" class="logo-img" />
+      <span class="logo-text"><span class="pretend">Pretend</span><span class="ai">AI</span></span>
     </a>
-    <nav>
+    <nav class="desktop-nav">
       <a href="/leaderboard">Leaderboard</a>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
     </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">☰</button>
   </header>
+
+  <nav class="mobile-menu hidden" id="mobileMenu">
+    <a href="/leaderboard">Leaderboard</a>
+    <button class="theme-toggle" id="themeToggleMobile" aria-label="Toggle theme">🌙</button>
+  </nav>
 
   <main class="hero">
     <div class="hero-grid">
@@ -59,10 +66,9 @@
     </div>
   </main>
 
-  <!-- Game Modes Section -->
   <section class="modes-section">
     <h2>Choose Your Challenge</h2>
-    <p style="color:var(--muted);text-align:center;margin-bottom:32px;font-size:15px">Each mode tests different aspects of AI-like thinking</p>
+    <p style="color:var(--muted);text-align:center;font-size:14px">Each mode tests different aspects of AI-like thinking</p>
     <div class="modes-grid">
       <div class="mode-card">
         <div class="mode-icon">🎯</div>
@@ -87,7 +93,6 @@
     </div>
   </section>
 
-  <!-- How It Works Section -->
   <section class="how-it-works">
     <h2>How It Works</h2>
     <div class="how-timeline">
@@ -109,25 +114,24 @@
         <div class="timeline-number">3</div>
         <div class="timeline-content">
           <h3>Fool the AI for 5 Minutes</h3>
-          <p>Respond to the AI's messages acting as perfectly as an AI would. Think about accuracy, clarity, neutrality, and authenticity. You have exactly 5 minutes.</p>
+          <p>Respond to the AI's messages acting as perfectly as an AI would. Think about accuracy, clarity, neutrality, and authenticity.</p>
         </div>
       </div>
       <div class="timeline-step">
         <div class="timeline-number">4</div>
         <div class="timeline-content">
           <h3>Get Instant Scoring</h3>
-          <p>After time expires, the AI evaluates your responses and gives you a score (0-100). See your rank, strengths, and weaknesses instantly.</p>
+          <p>After time expires, the AI evaluates your responses and gives you a score (0–100). See your rank, strengths, and weaknesses instantly.</p>
         </div>
       </div>
       <div class="timeline-step">
         <div class="timeline-number">5</div>
         <div class="timeline-content">
           <h3>Share & Climb the Leaderboard</h3>
-          <p>Share your score with friends, download your scorecard, and compete globally. Each mode has its own leaderboard ranking.</p>
+          <p>Share your score card with friends, and compete globally. Each mode has its own leaderboard ranking.</p>
         </div>
       </div>
     </div>
-
     <div class="tips-box">
       <div class="tip">
         <span class="tip-icon">💡</span>
@@ -146,7 +150,7 @@
         <span class="tip-icon">⚠️</span>
         <div>
           <h4>Important Note</h4>
-          <p>While you <em>can</em> use AI to help you practice, we don't recommend using AI to generate live responses during the test. The point is to evaluate your authentic ability to think and respond like an AI would. The real challenge is training your mind to think like advanced models.</p>
+          <p>While you <em>can</em> use AI to help you practice, we don't recommend using AI to generate live responses during the test. The real challenge is training your mind to think like advanced models.</p>
         </div>
       </div>
     </div>
@@ -154,14 +158,14 @@
 
   <section class="ranks">
     <h2>How artificial are you?</h2>
-    <p style="color:var(--muted);text-align:center;margin-bottom:28px;font-size:15px">Your score reveals where you fall on the spectrum. Push yourself higher.</p>
+    <p style="color:var(--muted);text-align:center;font-size:14px;margin-bottom:0">Your score reveals where you fall on the spectrum.</p>
     <div class="rank-grid">
-      <div><b>0–20</b><span>Human</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Too real to be AI</span></div>
-      <div><b>21–40</b><span>Chatbot</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Learning to adapt</span></div>
-      <div><b>41–60</b><span>Assistant</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Solid foundation</span></div>
-      <div><b>61–80</b><span>GPT-Class</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Very convincing</span></div>
-      <div><b>81–95</b><span>Advanced Model</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Exceptionally artificial</span></div>
-      <div class="top"><b>96–100</b><span>Synthetic Mind</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Indistinguishable</span></div>
+      <div><b>0–20</b><span>Human</span><span style="font-size:11px;color:var(--muted);margin-top:2px">Too real to be AI</span></div>
+      <div><b>21–40</b><span>Chatbot</span><span style="font-size:11px;color:var(--muted);margin-top:2px">Learning to adapt</span></div>
+      <div><b>41–60</b><span>Assistant</span><span style="font-size:11px;color:var(--muted);margin-top:2px">Solid foundation</span></div>
+      <div><b>61–80</b><span>GPT-Class</span><span style="font-size:11px;color:var(--muted);margin-top:2px">Very convincing</span></div>
+      <div><b>81–95</b><span>Advanced Model</span><span style="font-size:11px;color:var(--muted);margin-top:2px">Exceptionally artificial</span></div>
+      <div class="top"><b>96–100</b><span>Synthetic Mind</span><span style="font-size:11px;color:var(--muted);margin-top:2px">Indistinguishable</span></div>
     </div>
   </section>
 
@@ -172,45 +176,47 @@
       <div class="lb-grid" id="leaderboardPreview">
         <div style="text-align:center;color:var(--muted);padding:20px">Loading leaderboard...</div>
       </div>
-      <div style="text-align:center;margin-top:24px">
+      <div style="text-align:center;margin-top:20px">
         <a href="/leaderboard" class="cta-sm">View Full Leaderboard →</a>
       </div>
     </div>
   </section>
 
   <footer>
-    <span>PretendAI · how artificial are you?</span>
-    <span style="margin-top:12px;display:block;font-size:12px">
-      <a href="https://github.com/MKishoreDev" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);transition:color .2s;margin-left:6px">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display:inline">
-          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-        </svg>
+    <span><span style="color:var(--logo-pretend);font-weight:700">Pretend</span><span style="color:var(--logo-ai);font-weight:700">AI</span> · how artificial are you?</span>
+    <span style="margin-top:10px;display:block;font-size:12px">
+      <a href="https://github.com/MKishoreDev" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--muted);transition:color .2s">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
         MKishoreDev
       </a>
     </span>
   </footer>
 
   <script>
-    // Dark/Light Mode Toggle
     function initTheme(){
       const isDark = localStorage.getItem('pretendai-theme') !== 'light';
       const html = document.documentElement;
-      const toggle = document.getElementById('themeToggle');
-      
+      const toggles = [document.getElementById('themeToggle'), document.getElementById('themeToggleMobile')];
       if (!isDark) html.classList.add('light-mode');
-      
-      toggle.addEventListener('click', () => {
-        const isLight = html.classList.contains('light-mode');
-        html.classList.toggle('light-mode');
-        localStorage.setItem('pretendai-theme', isLight ? 'dark' : 'light');
-        toggle.textContent = isLight ? '🌙' : '☀️';
+      toggles.forEach(t => {
+        if (!t) return;
+        t.addEventListener('click', () => {
+          const isLight = html.classList.contains('light-mode');
+          html.classList.toggle('light-mode');
+          localStorage.setItem('pretendai-theme', isLight ? 'dark' : 'light');
+          const icon = isLight ? '🌙' : '☀️';
+          toggles.forEach(x => { if(x) x.textContent = icon; });
+        });
+        t.textContent = isDark ? '🌙' : '☀️';
       });
-      
-      toggle.textContent = isDark ? '🌙' : '☀️';
     }
     initTheme();
 
-    // Landing Form Handler
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuToggle.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+    mobileMenu.querySelectorAll('a').forEach(l => l.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
     document.getElementById('startForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const name = document.getElementById('name').value.trim() || 'Anonymous';
@@ -219,19 +225,16 @@
       location.href = '/play';
     });
 
-    // Load leaderboard preview with real data
     async function loadLeaderboardPreview() {
       try {
         const r = await fetch('/api/leaderboard?mode=all');
         const data = await r.json();
         const preview = document.getElementById('leaderboardPreview');
         const topScores = (data.top || []).slice(0, 5);
-        
         if (topScores.length === 0) {
           preview.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;grid-column:1/-1">No scores yet. Be the first!</div>';
           return;
         }
-
         preview.innerHTML = topScores.map((item, idx) => `
           <div class="lb-item">
             <span class="lb-rank">${idx + 1}</span>
@@ -241,14 +244,10 @@
           </div>
         `).join('');
       } catch (e) {
-        console.error('Failed to load leaderboard:', e);
         document.getElementById('leaderboardPreview').innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;grid-column:1/-1">Unable to load leaderboard</div>';
       }
     }
-
     function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-    // Load leaderboard on page load
     loadLeaderboardPreview();
   </script>
 </body>
