@@ -411,12 +411,16 @@
     }
 
     async function nodeToBlob(node){
-      return await htmlToImage.toBlob(node, { pixelRatio: 2, backgroundColor: '#0a0a12' });
+      const isDark = !document.documentElement.classList.contains('light-mode');
+      const bg = isDark ? '#0a0a12' : '#f9f9fb';
+      return await htmlToImage.toBlob(node, { pixelRatio: 2, backgroundColor: bg });
     }
 
     async function nodeToPng(node, filename){
+      const isDark = !document.documentElement.classList.contains('light-mode');
+      const bg = isDark ? '#0a0a12' : '#f9f9fb';
       try {
-        const dataUrl = await htmlToImage.toPng(node, { pixelRatio: 2, backgroundColor: '#0a0a12' });
+        const dataUrl = await htmlToImage.toPng(node, { pixelRatio: 2, backgroundColor: bg });
         const a = document.createElement('a');
         a.href = dataUrl; a.download = filename; a.click();
       } catch (e){
