@@ -7,7 +7,7 @@ average reply time so the leaderboard can be filtered and sorted in various ways
 
 from datetime import datetime, timezone
 
-from database import get_db
+from database.connection import get_db
 
 
 def add_score(

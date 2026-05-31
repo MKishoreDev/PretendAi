@@ -8,7 +8,7 @@ and the final evaluation result once the game ends.
 import time
 from datetime import datetime, timezone
 
-from database import get_db
+from database.connection import get_db
 
 
 def create_session(
