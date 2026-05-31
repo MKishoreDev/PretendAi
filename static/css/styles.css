@@ -37,12 +37,12 @@ button,input,select,textarea{font:inherit;color:inherit}
 .logo-img{height:48px;width:48px;object-fit:contain;display:block;flex-shrink:0}
 @media (max-width:640px){.logo-img{height:40px;width:40px}}
 .logo-text{display:flex;align-items:center;gap:0;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1;user-select:none}
-/* Dark mode logo — Pretend=light-purple, AI=cyan, matching stats card */
-.logo-text .pretend{color:#a78bfa}
-.logo-text .ai{color:#22d3ee}
-/* Light mode logo — Pretend=deep-purple, AI=teal */
-html.light-mode .logo-text .pretend{color:#6d28d9}
-html.light-mode .logo-text .ai{color:#0891b2}
+/* Dark mode logo */
+.logo-text .pretend{background:linear-gradient(135deg,#c4b5fd 0%,#a78bfa 50%,#8b6bff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo-text .ai{background:linear-gradient(135deg,#7c5cff 0%,#8b6bff 50%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* Light mode logo */
+html.light-mode .logo-text .pretend{background:linear-gradient(135deg,#060814 0%,#0b1020 50%,#111827 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+html.light-mode .logo-text .ai{background:linear-gradient(135deg,#7c5cff 0%,#8b6bff 50%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media (max-width:640px){.logo-text{font-size:21px}}
 
 /* ---------- nav ---------- */
@@ -356,15 +356,15 @@ html.light-mode .x-who{color:#5a5a66}
 html.light-mode .x-msg.ai_user{background:#ebebf5;border-color:#d0d0e0}
 html.light-mode .x-footer{border-top-color:#d0d0e0}
 html.light-mode .x-footer-tagline{color:#5a5a66}
-html.light-mode .x-footer-brand .xb-pretend{color:#6d28d9}
-html.light-mode .x-footer-brand .xb-ai{color:#0891b2}
-html.light-mode .x-brand .xb-pretend{color:#6d28d9}
-html.light-mode .x-brand .xb-ai{color:#0891b2}
+html.light-mode .x-footer-brand .xb-pretend{background:linear-gradient(135deg,#060814 0%,#0b1020 50%,#111827 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+html.light-mode .x-footer-brand .xb-ai{background:linear-gradient(135deg,#7c5cff 0%,#8b6bff 50%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+html.light-mode .x-brand .xb-pretend{background:linear-gradient(135deg,#060814 0%,#0b1020 50%,#111827 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+html.light-mode .x-brand .xb-ai{background:linear-gradient(135deg,#7c5cff 0%,#8b6bff 50%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .x-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .x-brand{font-weight:800;display:flex;align-items:center;gap:6px;font-size:18px;letter-spacing:-.01em}
 .x-logo-img{width:28px;height:28px;object-fit:contain;display:block;flex-shrink:0}
-.x-brand .xb-pretend{color:#a78bfa}
-.x-brand .xb-ai{color:#22d3ee}
+.x-brand .xb-pretend{background:linear-gradient(135deg,#c4b5fd 0%,#a78bfa 50%,#8b6bff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.x-brand .xb-ai{background:linear-gradient(135deg,#7c5cff 0%,#8b6bff 50%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .x-mode{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8b8b9a;border:1px solid #2a2a40;padding:4px 10px;border-radius:999px}
 .x-name{font-size:14px;color:#8b8b9a;margin-bottom:4px}
 .x-score{font-size:80px;font-weight:800;letter-spacing:-.04em;line-height:1;background:linear-gradient(135deg,#7c5cff,#22d3ee,#34d399);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -380,8 +380,8 @@ html.light-mode .x-brand .xb-ai{color:#0891b2}
 .x-meta b{font-size:17px}
 .x-meta span{color:#8b8b9a;font-size:11px;text-transform:uppercase;letter-spacing:.12em}
 .x-footer-brand{display:flex;align-items:center;gap:6px;font-weight:800;font-size:14px}
-.x-footer-brand .xb-pretend{color:#a78bfa}
-.x-footer-brand .xb-ai{color:#22d3ee}
+.x-footer-brand .xb-pretend{background:linear-gradient(135deg,#c4b5fd 0%,#a78bfa 50%,#8b6bff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.x-footer-brand .xb-ai{background:linear-gradient(135deg,#7c5cff 0%,#8b6bff 50%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .x-footer-tagline{font-size:11px;color:#8b8b9a;margin-top:2px}
 
 .x-chat{width:600px}
