@@ -7,6 +7,7 @@ database/__init__.py (which itself imports from those two modules).
 """
 
 import os
+import certifi
 
 from pymongo import DESCENDING, MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
@@ -39,7 +40,7 @@ def get_db():
     global _client, _db
     if _db is None:
         try:
-            _client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+            _client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000, tlsCAFile=certifi.where())
             # Ping verifies the connection is alive before we hand it out.
             _client.admin.command("ping")
             _db = _client["pretendai"]
