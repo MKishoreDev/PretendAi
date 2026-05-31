@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PretendAI — How AI are you?</title>
+<meta name="description" content="The AI becomes the user. You become the AI. Prove how artificial you are." />
+<link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body class="landing" id="body">
+  <header class="nav">
+    <a class="brand" href="/"><span class="dot"></span> PretendAI</a>
+    <nav>
+      <a href="/leaderboard">Leaderboard</a>
+      <a class="cta-sm" href="/play">Play</a>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <div class="hero-grid">
+      <div>
+        <p class="kicker">THE REVERSE TURING TEST</p>
+        <h1>How <span class="grad">artificial</span> are you?</h1>
+        <p class="sub">You have 5 minutes to fool an AI. Act like it. Think like it. Respond like it. The AI will grade your performance on accuracy, naturalness, and authenticity. Can you score over 85?</p>
+        <form id="startForm" class="start-form">
+          <input id="name" maxlength="24" placeholder="your handle" autocomplete="off" />
+          <select id="mode">
+            <option value="classic">Classic</option>
+            <option value="interview">Interview</option>
+            <option value="chaos">Chaos</option>
+            <option value="jailbreak">Jailbreak</option>
+          </select>
+          <button type="submit">Start Test →</button>
+        </form>
+        <p class="hint">No login. 5 minutes. Instant score. Leaderboard global.</p>
+      </div>
+      <aside class="card-stack">
+        <div class="chip-card">
+          <div class="who">AI · acting as user</div>
+          <p>hey im learning python whats the easiest way to read a file lol</p>
+        </div>
+        <div class="chip-card you">
+          <div class="who">You · acting as AI</div>
+          <p>You can use Python's built-in <code>open()</code> function. Here is a minimal example…</p>
+        </div>
+        <div class="score-card">
+          <div class="score-num">92<span>/100</span></div>
+          <div class="rank">Rank: <b>Advanced Model</b></div>
+          <ul>
+            <li>✓ Clear explanation</li>
+            <li>✓ Helpful tone</li>
+            <li>✗ Slightly too casual</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <section class="ranks">
+    <h2>How artificial are you?</h2>
+    <p style="color:var(--muted);text-align:center;margin-bottom:28px;font-size:15px">Your score reveals where you fall on the spectrum. Push yourself higher.</p>
+    <div class="rank-grid">
+      <div><b>0–20</b><span>Human</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Too real to be AI</span></div>
+      <div><b>21–40</b><span>Chatbot</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Learning to adapt</span></div>
+      <div><b>41–60</b><span>Assistant</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Solid foundation</span></div>
+      <div><b>61–80</b><span>GPT-Class</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Very convincing</span></div>
+      <div><b>81–95</b><span>Advanced Model</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Exceptionally artificial</span></div>
+      <div class="top"><b>96–100</b><span>Synthetic Mind</span><span style="font-size:11px;color:var(--muted);margin-top:4px">Indistinguishable</span></div>
+    </div>
+  </section>
+
+  <section class="leaderboard-preview">
+    <div class="lb-container">
+      <h2>Global Leaderboard</h2>
+      <p>Top performers pushing the limits of AI simulation</p>
+      <div class="lb-grid">
+        <div class="lb-item">
+          <span class="lb-rank">1</span>
+          <span class="lb-name">SyntheticNova</span>
+          <span class="lb-mode">Jailbreak</span>
+          <span class="lb-score">98</span>
+        </div>
+        <div class="lb-item">
+          <span class="lb-rank">2</span>
+          <span class="lb-name">DigitalMind</span>
+          <span class="lb-mode">Chaos</span>
+          <span class="lb-score">96</span>
+        </div>
+        <div class="lb-item">
+          <span class="lb-rank">3</span>
+          <span class="lb-name">AIWhisperer</span>
+          <span class="lb-mode">Classic</span>
+          <span class="lb-score">95</span>
+        </div>
+        <div class="lb-item">
+          <span class="lb-rank">4</span>
+          <span class="lb-name">CodeArtist</span>
+          <span class="lb-mode">Interview</span>
+          <span class="lb-score">93</span>
+        </div>
+        <div class="lb-item">
+          <span class="lb-rank">5</span>
+          <span class="lb-name">MindMeld</span>
+          <span class="lb-mode">Classic</span>
+          <span class="lb-score">92</span>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:24px">
+        <a href="/leaderboard" class="cta-sm">View Full Leaderboard →</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>PretendAI · how artificial are you?</span>
+    <span style="margin-top:12px;display:block;font-size:12px">
+      <a href="https://github.com/Mkishoredev" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);transition:color .2s;margin-left:6px">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display:inline">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        Mkishoredev
+      </a>
+    </span>
+  </footer>
+
+  <script>
+    // Dark/Light Mode Toggle
+    function initTheme(){
+      const isDark = localStorage.getItem('pretendai-theme') !== 'light';
+      const html = document.documentElement;
+      const toggle = document.getElementById('themeToggle');
+      
+      if (!isDark) html.classList.add('light-mode');
+      
+      toggle.addEventListener('click', () => {
+        const isLight = html.classList.contains('light-mode');
+        html.classList.toggle('light-mode');
+        localStorage.setItem('pretendai-theme', isLight ? 'dark' : 'light');
+        toggle.textContent = isLight ? '🌙' : '☀️';
+      });
+      
+      toggle.textContent = isDark ? '🌙' : '☀️';
+    }
+    initTheme();
+
+    // Landing Form Handler
+    document.getElementById('startForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim() || 'Anonymous';
+      const mode = document.getElementById('mode').value;
+      sessionStorage.setItem('pa_init', JSON.stringify({ name, mode }));
+      location.href = '/play';
+    });
+  </script>
+</body>
+</html>

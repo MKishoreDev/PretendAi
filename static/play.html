@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PretendAI · live test</title>
+<link rel="stylesheet" href="/static/css/styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+</head>
+<body class="play" id="body">
+  <header class="nav">
+    <a class="brand" href="/"><span class="dot"></span> PretendAI</a>
+    <div style="display:flex;gap:12px;align-items:center;flex:1;justify-content:flex-end">
+      <div class="mode-pill" id="modePill">classic</div>
+      <div class="timer" id="timer">5:00</div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/leaderboard">Leaderboard</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="chat-wrap">
+    <div id="chat" class="chat"></div>
+    <form id="replyForm" class="composer">
+      <textarea id="reply" rows="1" placeholder="respond as a perfectly neutral AI assistant…" autofocus></textarea>
+      <button id="send" type="submit">Send</button>
+      <button id="endBtn" type="button" class="ghost">End</button>
+    </form>
+  </main>
+
+  <!-- mode picker (shown if user didn't pick a mode) -->
+  <div id="modeOverlay" class="overlay hidden">
+    <div class="result-card">
+      <h2 style="margin:0 0 6px;letter-spacing:-.02em">Pick your arena</h2>
+      <p class="verdict">Each mode changes the human the AI pretends to be.</p>
+      <input id="modeName" maxlength="24" placeholder="your handle" class="m-input" />
+      <div class="mode-grid">
+        <button class="mode-btn" data-mode="classic"><b>Classic</b><span>Everyday questions</span></button>
+        <button class="mode-btn" data-mode="interview"><b>Interview</b><span>A character with a story</span></button>
+        <button class="mode-btn" data-mode="chaos"><b>Chaos</b><span>Absurd, surreal humans</span></button>
+        <button class="mode-btn" data-mode="jailbreak"><b>Jailbreak</b><span>They try to trick you</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay hidden">
+    <div class="result-card">
+      <div class="result-head">
+        <div class="big-score"><span id="rFinal">--</span><small>/100</small></div>
+        <div class="rank-pill" id="rRank">—</div>
+      </div>
+      <p id="rVerdict" class="verdict"></p>
+      <div class="bars" id="rBars"></div>
+      <div class="cols">
+        <div><h4>Strengths</h4><ul id="rStrengths"></ul></div>
+        <div><h4>Weaknesses</h4><ul id="rWeak"></ul></div>
+      </div>
+      <div class="actions">
+        <a href="/play" class="btn">Try again</a>
+        <a href="/leaderboard" class="btn ghost">Leaderboard</a>
+        <button id="cardBtn" class="btn" type="button">Download score card</button>
+        <button id="shareBtn" class="btn ghost" type="button">Share 🚀</button>
+        <button id="chatBtn" class="btn ghost" type="button">Download chat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- warning modal for end chat -->
+  <div id="endWarningModal" class="warning-modal hidden">
+    <div class="warning-content">
+      <h3>⚠️ Are you sure?</h3>
+      <p>Your progress will be lost. Stats will NOT be shown. You'll go back to home. Are you absolutely sure you want to end?</p>
+      <div class="warning-buttons">
+        <button class="confirm" id="confirmEndBtn">Yes, quit now</button>
+        <button class="cancel" id="cancelEndBtn">No, keep playing</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- loading overlay when time ends or submitting -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <h3>Evaluating your performance...</h3>
+      <p>The AI is analyzing your responses and calculating your score. Please don't leave this page.</p>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:16px">This usually takes 30-60 seconds</p>
+    </div>
+  </div>
+
+  <!-- hidden render targets for image export -->
+  <div id="exportRoot" aria-hidden="true"></div>
+
+  <script>
+    // Dark/Light Mode Toggle
+    function initTheme(){
+      const isDark = localStorage.getItem('pretendai-theme') !== 'light';
+      const html = document.documentElement;
+      const toggle = document.getElementById('themeToggle');
+      
+      if (!isDark) html.classList.add('light-mode');
+      
+      toggle.addEventListener('click', () => {
+        const isLight = html.classList.contains('light-mode');
+        html.classList.toggle('light-mode');
+        localStorage.setItem('pretendai-theme', isLight ? 'dark' : 'light');
+        toggle.textContent = isLight ? '🌙' : '☀️';
+      });
+      
+      toggle.textContent = isDark ? '🌙' : '☀️';
+    }
+    initTheme();
+
+
+  </script>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const form = document.getElementById('replyForm');
+    const input = document.getElementById('reply');
+    const sendBtn = document.getElementById('send');
+    const endBtn = document.getElementById('endBtn');
+    const timerEl = document.getElementById('timer');
+    const modePill = document.getElementById('modePill');
+    const overlay = document.getElementById('overlay');
+    const modeOverlay = document.getElementById('modeOverlay');
+    const endWarningModal = document.getElementById('endWarningModal');
+    const confirmEndBtn = document.getElementById('confirmEndBtn');
+    const cancelEndBtn = document.getElementById('cancelEndBtn');
+
+    let session = null;
+    let endsAt = 0;
+    let finished = false;
+    let lastResult = null;
+    let initData = { name: 'Anonymous', mode: null };
+
+    function fmt(s){ s=Math.max(0,s|0); return `${(s/60|0)}:${String(s%60).padStart(2,'0')}`; }
+    function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+    function tick(){
+      if (finished) return;
+      const remain = endsAt - Date.now()/1000;
+      timerEl.textContent = fmt(remain);
+      timerEl.classList.toggle('warn', remain < 60 && remain >= 20);
+      timerEl.classList.toggle('danger', remain < 20);
+      if (remain <= 0) { finishTest(); return; }
+      requestAnimationFrame(tick);
+    }
+
+    function addMsg(from, text){
+      const d = document.createElement('div');
+      d.className = `msg ${from}`;
+      d.textContent = text;
+      chat.appendChild(d);
+      chat.scrollTop = chat.scrollHeight;
+      return d;
+    }
+
+    function addTypingBubble(){
+      const d = document.createElement('div');
+      d.className = 'msg ai_user typing-bubble';
+      d.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      chat.appendChild(d);
+      chat.scrollTop = chat.scrollHeight;
+      return d;
+    }
+
+    function thinkDelay(text){
+      const words = (text||'').trim().split(/\s+/).length;
+      return Math.min(4500, 500 + words * (160 + Math.random()*140));
+    }
+
+    async function typeOut(el, text){
+      el.textContent = '';
+      const caret = document.createElement('span'); caret.className='caret';
+      el.appendChild(caret);
+      for (let i=0;i<text.length;i++){
+        caret.before(text[i]);
+        chat.scrollTop = chat.scrollHeight;
+        let d = 22 + Math.random()*55;
+        if (/[.,!?]/.test(text[i])) d += 180 + Math.random()*120;
+        await new Promise(r=>setTimeout(r, d));
+      }
+      caret.remove();
+    }
+
+    async function showAiMessage(bubble, text){
+      await new Promise(r => setTimeout(r, thinkDelay(text)));
+      bubble.classList.remove('typing-bubble');
+      bubble.innerHTML = '';
+      await typeOut(bubble, text);
+    }
+
+    function loadInit(){
+      try { Object.assign(initData, JSON.parse(sessionStorage.getItem('pa_init') || '{}')); } catch {}
+    }
+
+    function askMode(){
+      modeOverlay.classList.remove('hidden');
+      const nameInput = document.getElementById('modeName');
+      nameInput.value = initData.name && initData.name !== 'Anonymous' ? initData.name : '';
+      modeOverlay.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.onclick = () => {
+          const mode = btn.dataset.mode;
+          const name = (nameInput.value.trim() || 'Anonymous').slice(0,24);
+          sessionStorage.setItem('pa_init', JSON.stringify({ name, mode }));
+          initData = { name, mode };
+          modeOverlay.classList.add('hidden');
+          start();
+        };
+      });
+    }
+
+    async function start(){
+      modePill.textContent = initData.mode;
+      const bubble = addTypingBubble();
+      try {
+        const r = await fetch('/api/start', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ name: initData.name, mode: initData.mode })
+        });
+        if (r.status === 503){ bubble.remove(); addMsg('ai_user', 'AI is busy right now. Wait 10s and refresh.'); return; }
+        if (!r.ok) throw new Error('start');
+        const data = await r.json();
+        session = data.session_id;
+        endsAt = data.ends_at;
+        await showAiMessage(bubble, data.opening);
+        tick();
+      } catch {
+        bubble.remove();
+        addMsg('ai_user', 'Something happened, try again in a few minutes.');
+      }
+    }
+
+    async function sendReply(text){
+      addMsg('player_ai', text);
+      sendBtn.disabled = true;
+      const bubble = addTypingBubble();
+      try {
+        const r = await fetch('/api/reply', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ session_id: session, reply: text })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (data.time_up){ bubble.remove(); finish(); return; }
+        if (r.status === 503){ bubble.classList.remove('typing-bubble'); bubble.textContent = '(AI is rate-limited, give it a moment…)'; return; }
+        if (!r.ok) throw new Error('reply');
+        await showAiMessage(bubble, data.ai_user);
+      } catch {
+        bubble.classList.remove('typing-bubble');
+        bubble.textContent = 'Something happened, try again.';
+      } finally {
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const v = input.value.trim();
+      if (!v || !session || finished) return;
+      input.value = ''; input.style.height='auto';
+      sendReply(v);
+    });
+    input.addEventListener('input', () => {
+      input.style.height='auto';
+      input.style.height = Math.min(160, input.scrollHeight) + 'px';
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); }
+    });
+
+    // End button with warning modal
+    endBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      endWarningModal.classList.remove('hidden');
+    });
+
+    confirmEndBtn.addEventListener('click', () => {
+      endWarningModal.classList.add('hidden');
+      location.href = '/';
+    });
+
+    cancelEndBtn.addEventListener('click', () => {
+      endWarningModal.classList.add('hidden');
+      input.focus();
+    });
+
+    async function finishTest(){
+      if (finished) return;
+      if (!session) return;
+      finished = true;
+      sendBtn.disabled = true; endBtn.disabled = true;
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+      try {
+        const r = await fetch('/api/finish', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ session_id: session })
+        });
+        if (!r.ok) throw new Error('finish');
+        lastResult = await r.json();
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        showResult(lastResult);
+      } catch (err) {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        alert('Something happened, try again in a few minutes.');
+      }
+    }
+
+    function showResult(res){
+      document.getElementById('rFinal').textContent = res.final ?? '--';
+      document.getElementById('rRank').textContent = res.rank ?? '—';
+      document.getElementById('rVerdict').textContent = res.verdict ?? '';
+      const bars = document.getElementById('rBars');
+      bars.innerHTML = '';
+      const labels = {
+        helpfulness:'Helpfulness', neutrality:'Neutrality', clarity:'Clarity',
+        structure:'Structure', accuracy:'Accuracy', ai_likeness:'AI-Likeness',
+        hallucination_risk:'Hallucination', empathy_balance:'Empathy'
+      };
+      Object.entries(res.scores || {}).forEach(([k,v]) => {
+        const row = document.createElement('div'); row.className='bar';
+        row.innerHTML = `<span>${labels[k]||k}</span><span class="track"><span class="fill" style="width:${v}%"></span></span><b>${v}</b>`;
+        bars.appendChild(row);
+      });
+      const s = document.getElementById('rStrengths'); s.innerHTML='';
+      (res.strengths||[]).forEach(x => { const li=document.createElement('li'); li.textContent=x; s.appendChild(li); });
+      const w = document.getElementById('rWeak'); w.innerHTML='';
+      (res.weaknesses||[]).forEach(x => { const li=document.createElement('li'); li.textContent=x; w.appendChild(li); });
+      overlay.classList.remove('hidden');
+
+      document.getElementById('cardBtn').onclick = () => exportScoreCard(res);
+      document.getElementById('chatBtn').onclick = () => exportChat(res);
+      document.getElementById('shareBtn').onclick = () => shareScoreCard(res);
+    }
+
+    function buildScoreCard(res){
+      const root = document.getElementById('exportRoot');
+      const labels = {
+        helpfulness:'Helpfulness', neutrality:'Neutrality', clarity:'Clarity',
+        structure:'Structure', accuracy:'Accuracy', ai_likeness:'AI-Likeness',
+        hallucination_risk:'Hallucination', empathy_balance:'Empathy'
+      };
+      const bars = Object.entries(res.scores||{}).map(([k,v]) =>
+        `<div class="x-bar"><span>${labels[k]||k}</span><span class="x-track"><span class="x-fill" style="width:${v}%"></span></span><b>${v}</b></div>`
+      ).join('');
+      const avg = res.avg_reply_ms ? (res.avg_reply_ms/1000).toFixed(1)+'s' : '—';
+      const node = document.createElement('div');
+      node.className = 'x-card';
+      node.innerHTML = `
+        <div class="x-head">
+          <div class="x-brand"><span class="x-dot"></span> PretendAI</div>
+          <div class="x-mode">${res.mode||'classic'}</div>
+        </div>
+        <div class="x-name">${escapeHtml(res.name||'Anonymous')}</div>
+        <div class="x-score">${res.final ?? '--'}<small>/100</small></div>
+        <div class="x-rank">${escapeHtml(res.rank||'—')}</div>
+        <div class="x-verdict">"${escapeHtml(res.verdict||'')}"</div>
+        <div class="x-bars">${bars}</div>
+        <div class="x-meta">
+          <div><b>${res.turns||0}</b><span>replies</span></div>
+          <div><b>${avg}</b><span>avg time</span></div>
+          <div><b>pretendai</b><span>how AI are you?</span></div>
+        </div>`;
+      root.innerHTML = '';
+      root.appendChild(node);
+      return node;
+    }
+
+    function buildChatCard(res){
+      const root = document.getElementById('exportRoot');
+      const turns = (res.history||[]).map(t => `
+        <div class="x-msg ${t.from}">
+          <div class="x-who">${t.from==='ai_user'?'AI · user':'You · AI'}</div>
+          <div class="x-text">${escapeHtml(t.text)}</div>
+        </div>`).join('');
+      const node = document.createElement('div');
+      node.className = 'x-chat';
+      node.innerHTML = `
+        <div class="x-head">
+          <div class="x-brand"><span class="x-dot"></span> PretendAI · ${escapeHtml(res.name||'Anonymous')}</div>
+          <div class="x-mode">${res.mode||'classic'} · ${res.final ?? '--'}/100</div>
+        </div>
+        <div class="x-stream">${turns}</div>
+        <div class="x-footer">pretendai · how AI are you?</div>`;
+      root.innerHTML = '';
+      root.appendChild(node);
+      return node;
+    }
+
+    async function nodeToPng(node, filename){
+      try {
+        const dataUrl = await htmlToImage.toPng(node, { pixelRatio: 2, backgroundColor: '#0a0a12' });
+        const a = document.createElement('a');
+        a.href = dataUrl; a.download = filename; a.click();
+      } catch (e){
+        console.error(e);
+        alert('Could not export image. Try again.');
+      } finally {
+        document.getElementById('exportRoot').innerHTML = '';
+      }
+    }
+
+    function exportScoreCard(res){
+      const node = buildScoreCard(res);
+      nodeToPng(node, `pretendai-${(res.name||'me').toLowerCase()}-${res.final||0}.png`);
+    }
+
+    function exportChat(res){
+      const node = buildChatCard(res);
+      nodeToPng(node, `pretendai-chat-${(res.name||'me').toLowerCase()}.png`);
+    }
+
+    function shareScoreCard(res){
+      const caption = `I scored ${res.final || 0}/100 as a ${res.rank || 'Model'} on PretendAI! Can you beat me? Try it here: pretendai.app`;
+      const text = `📊 ${caption}`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'My PretendAI Score',
+          text: text,
+          url: window.location.origin
+        }).catch(err => console.error(err));
+      } else {
+        const node = buildScoreCard(res);
+        nodeToPng(node, `pretendai-score-${res.final||0}.png`).then(() => {
+          alert(`Share this image with the caption:\n\n${caption}`);
+        });
+      }
+    }
+
+    loadInit();
+    if (!initData.mode) askMode(); else start();
+  </script>
+</body>
+</html>
