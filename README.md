@@ -124,6 +124,26 @@ PretendAI turns those invisible behaviors into a game.
 The better you understand modern AI systems, the higher you score.
 
 ---
+---
+
+## ⚡ Built With
+
+<div align="center">
+
+| Layer | Technology |
+|--------|------------|
+| 🎨 Frontend | HTML5, CSS3, JavaScript |
+| ⚙️ Backend | Python, Flask |
+| 🗄️ Database | MongoDB |
+| 🧠 AI Engine | Groq API, LLM Evaluation Pipeline |
+| 🚀 Deployment | Vercel |
+| 🔧 Tooling | Git, GitHub |
+
+</div>
+
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=python,flask,mongodb,html,css,js,vercel,git,github&perline=9" />
+</p>
 
 ## Core Product Features
 
