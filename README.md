@@ -5,300 +5,237 @@
 </p>
 
 <p align="center">
-  <b>The Reverse Turing Test</b>
-  <br>
-  AI pretends to be human. You pretend to be AI.
+  <h3>The Reverse Turing Test</h3>
+  <p>AI pretends to be human. You pretend to be AI.</p>
 </p>
 
 <p align="center">
   <a href="https://pretendai.vercel.app">
-    <img src="https://img.shields.io/badge/🌐_Live_Demo-Try_PretendAI-000?style=for-the-badge">
+    <img src="https://img.shields.io/badge/Try%20PretendAI-Live%20Demo-black?style=for-the-badge">
   </a>
 </p>
 
 ---
 
-## 💡 About
+## The Idea
 
-After spending years chatting with AI assistants, I started wondering:
+In 1950, Alan Turing proposed a simple but revolutionary question:
 
-> **Have we actually learned how AI thinks?**
+> Can machines think?
 
-Most people can recognize a good AI response.
+To explore it, he introduced what later became known as the **Turing Test**.
 
-Far fewer can consistently produce one.
+A human judge would talk to two participants:
 
-So I built **PretendAI** — a reverse Turing Test where humans attempt to act like AI assistants while AI models pretend to be human users.
+* A human
+* A machine
 
-The challenge is simple:
+If the judge could not reliably tell which was which, the machine had successfully imitated human behavior.
+
+For decades, AI researchers focused on one goal:
+
+**Making AI sound human.**
+
+PretendAI flips that idea entirely.
+
+Instead of asking:
+
+> Can AI convince humans that it is human?
+
+PretendAI asks:
+
+> Can humans convince AI that they are AI?
+
+This is the Reverse Turing Test.
+
+---
+
+## What Is PretendAI?
+
+PretendAI is an AI-powered social game where:
 
 * 🤖 AI acts as the user
-* 🧑 You act as the AI assistant
+* 🧑 Humans act as the AI assistant
 * 🧠 Another AI evaluates the conversation
 
-At the end of every session, you receive a detailed score and feedback explaining how AI-like your responses were.
+Your goal is to respond exactly like a modern AI assistant would.
+
+Not just helpful.
+
+Not just accurate.
+
+But convincingly artificial.
+
+Every conversation becomes a challenge in reasoning, structure, clarity, neutrality, and AI-style communication.
 
 ---
 
-## 🎮 How It Works
+## How It Works
 
 ```text
+                ALAN TURING'S TEST
+
+Human Judge
+     │
+     ▼
+Human  ←→  AI
+     │
+     ▼
+Can the judge tell?
+
+────────────────────────────────────
+
+             PRETENDAI TEST
+
 AI User
-   │
-   ▼
-Human Player (acts as AI)
-   │
-   ▼
+    │
+    ▼
+Human Player
+(acts as AI)
+    │
+    ▼
 AI Judge
-   │
-   ▼
-Score + Feedback + Leaderboard
+    │
+    ▼
+Score + Feedback
 ```
 
-1. Choose a mode
-2. Start chatting with an AI pretending to be a human
-3. Respond exactly like an AI assistant
-4. Complete the session
-5. Receive AI-generated feedback
-6. Share your scorecard and compare results
+The original Turing Test measures whether AI can imitate humans.
+
+PretendAI measures whether humans understand AI well enough to imitate it.
 
 ---
 
-## 🎭 Game Modes
+## Why It Exists
 
-| Mode         | Description                                                              |
-| ------------ | ------------------------------------------------------------------------ |
-| 🎯 Classic   | Everyday conversations involving coding, writing, productivity, and life |
-| 🎭 Interview | Character-driven conversations with personalities and goals              |
-| 🌪️ Chaos    | Surreal, unpredictable, and absurd scenarios                             |
-| 🔓 Jailbreak | AI actively attempts to break your character                             |
+Millions of people interact with AI every day.
+
+Yet very few people understand:
+
+* How AI structures answers
+* How AI balances neutrality
+* How AI handles uncertainty
+* How AI avoids hallucinations
+* How AI communicates empathy
+* How AI organizes information
+
+PretendAI turns those invisible behaviors into a game.
+
+The better you understand modern AI systems, the higher you score.
 
 ---
 
-## 📊 Evaluation Categories
+## Core Product Features
 
-Every conversation is analyzed across multiple dimensions.
+### 🤖 AI-Generated Users
 
-| Metric                       | Description                                   |
-| ---------------------------- | --------------------------------------------- |
-| 🤝 Helpfulness               | Did you help the user?                        |
-| 📝 Clarity                   | Were responses easy to understand?            |
-| 🏗️ Structure                | Were responses organized and readable?        |
-| ⚖️ Neutrality                | Did you avoid unnecessary bias?               |
-| 🎯 Accuracy                  | Were responses reliable?                      |
-| 🤖 AI-Likeness               | How closely did you resemble an AI assistant? |
-| ❤️ Empathy                   | Did you appropriately acknowledge concerns?   |
-| 🛡️ Hallucination Resistance | Did you avoid unsupported claims?             |
+Every session begins with an AI pretending to be a real human user.
 
-The evaluation engine generates:
+The AI may ask for:
 
-* Final score (0–100)
-* Detailed feedback
+* Coding help
+* Life advice
+* Writing assistance
+* Product recommendations
+* Technical explanations
+* Strange hypothetical questions
+
+No two conversations are identical.
+
+---
+
+### 🧠 AI Evaluation Engine
+
+After each session, a separate AI model analyzes the conversation.
+
+It evaluates:
+
+* Helpfulness
+* Accuracy
+* Structure
+* Neutrality
+* Empathy
+* Hallucination resistance
+* AI-likeness
+
+The result is a comprehensive performance report.
+
+---
+
+### 📊 Detailed Scoring
+
+Receive:
+
+* Overall score
+* Category scores
 * Strengths
 * Weaknesses
 * Improvement suggestions
 
----
-
-## 📸 Shareable Scorecards
-
-Every completed session generates a dynamic scorecard.
-
-<p align="center">
-  <img src="assets/scorecard.png" width="900" alt="PretendAI Scorecard">
-</p>
-
-Example feedback:
-
-```text
-Score: 55/100
-
-Strengths
-✓ Helpful tone
-✓ Mostly neutral responses
-✓ Acknowledged user concerns
-
-Weaknesses
-✗ Too generic
-✗ Not specific enough
-✗ Failed to deeply understand the user's project
-```
-
-These scorecards can be shared on social platforms and used to challenge friends.
+Know exactly where your AI impersonation succeeds and fails.
 
 ---
 
-## ✨ Features
+### 🏆 Global Leaderboards
 
-* 🤖 Reverse Turing Test gameplay
-* 🧠 AI-generated conversations
-* 📊 AI-powered evaluation system
-* 🏆 Global leaderboard
-* 📸 Dynamic scorecard generation
-* ⏱️ Timed sessions
-* 🎭 Multiple game modes
-* 🔓 Jailbreak challenges
-* 🌍 Public rankings
-* 📈 Detailed performance analytics
+Compete with:
 
----
+* Friends
+* Developers
+* Students
+* Prompt engineers
+* AI enthusiasts
 
-## 🏗️ Tech Stack
-
-<p align="center">
-  <img src="https://skillicons.dev/icons?i=python,flask,mongodb,html,css,js,vercel&perline=7" />
-</p>
-
-### Frontend
-
-* HTML5
-* CSS3
-* Vanilla JavaScript
-
-### Backend
-
-* Python
-* Flask
-
-### Database
-
-* MongoDB
-
-### AI
-
-* Groq API
-* LLM-powered conversation engine
-* LLM-powered evaluation engine
-
-### Deployment
-
-* Vercel
+Climb the rankings and prove your understanding of AI communication.
 
 ---
 
-## 🧠 System Architecture
+### 📸 Shareable Scorecards
 
-```text
-Player
-  │
-  ▼
-Frontend (HTML/CSS/JS)
-  │
-  ▼
-Flask Backend
-  │
-  ├── MongoDB
-  │
-  ├── Conversation Engine
-  │
-  │      └── Groq API
-  │
-  └── Evaluation Engine
-         └── Groq API
-                 │
-                 ▼
-           Score Generator
-                 │
-                 ▼
-            Leaderboard
-```
+Generate beautiful scorecards automatically after every session.
+
+Perfect for:
+
+* Social media
+* Friendly competitions
+* Community challenges
+* AI learning communities
 
 ---
 
-## ⚙️ Reliability Engineering
+## Game Modes
 
-One challenge was handling occasional model failures and request timeouts.
-
-To improve reliability, PretendAI automatically falls back to alternative models when necessary.
-
-```python
-FALLBACK_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "gemma2-9b-it",
-]
-```
-
-If a model fails, times out, or becomes unavailable, the system automatically retries using the next available model.
-
-This ensures conversations continue without disrupting the user experience.
+| Mode         | Experience                                  |
+| ------------ | ------------------------------------------- |
+| 🎯 Classic   | Everyday realistic conversations            |
+| 🎭 Interview | Personality-driven interactions             |
+| 🌪️ Chaos    | Unpredictable and absurd scenarios          |
+| 🔓 Jailbreak | AI attempts to break your assistant persona |
 
 ---
 
-## 📸 Dynamic Image Generation
+## What Makes PretendAI Different?
 
-PretendAI generates scorecards automatically after every session.
+Most AI products teach machines to imitate humans.
 
-Instead of manually creating images, scorecards are rendered using HTML and CSS and then converted into PNG images.
+PretendAI teaches humans to understand machines.
 
-Benefits:
+It transforms AI literacy into gameplay.
 
-* Reusable frontend components
-* Dynamic data rendering
-* Social-media-ready graphics
-* Consistent visual design
-
-This approach made it possible to generate personalized scorecards directly from evaluation results.
+The better you understand modern language models, the better you perform.
 
 ---
 
-## 🚀 Getting Started
+## The Challenge
 
-### Clone Repository
+Anyone can talk to AI.
 
-```bash
-git clone https://github.com/MKishoreDev/PretendAi.git
+Can you become one?
 
-cd PretendAi
-```
+Start a session.
 
-### Install Dependencies
+Convince the judge.
 
-```bash
-pip install -r requirements.txt
-```
+Beat the leaderboard.
 
-### Configure Environment Variables
-
-Create a `.env` file:
-
-```env
-GROQ_API_KEY=your_groq_api_key
-MONGODB_URI=your_mongodb_uri
-```
-
-### Run Locally
-
-```bash
-python app.py
-```
-
-Open:
-
-```text
-http://localhost:5000
-```
-
----
-
-## 🤝 Contributing
-
-Contributions, ideas, feature requests, and bug reports are welcome.
-
-Feel free to open an issue or submit a pull request.
-
----
-
-## ⭐ Support
-
-If you find PretendAI interesting, consider giving it a star.
-
-It helps more people discover the project and supports future development.
-
----
-
-<p align="center">
-  <b>Think you understand AI?</b>
-  <br>
-  Prove it.
-</p>
+Pass the Reverse Turing Test.
