@@ -1,7 +1,7 @@
 # 🤖 PretendAI
 
 <p align="center">
-  <img src="assets/banner.png" alt="PretendAI Banner">
+  <img src="assets/ai-banner.png" alt="PretendAI Banner">
 </p>
 
 <p align="center">
