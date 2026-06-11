@@ -133,7 +133,7 @@ The better you understand modern AI systems, the higher you score.
 | Layer | Technology |
 |--------|------------|
 | 🎨 Frontend | HTML5, CSS3, JavaScript |
-| ⚙️ Backend | Python, Flask |
+| ⚙️ Backend | Python, Fastapi |
 | 🗄️ Database | MongoDB |
 | 🧠 AI Engine | Groq API, LLM Evaluation Pipeline |
 | 🚀 Deployment | Vercel |
@@ -142,7 +142,7 @@ The better you understand modern AI systems, the higher you score.
 </div>
 
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=python,flask,mongodb,html,css,js,vercel,git,github&perline=9" />
+  <img src="https://skillicons.dev/icons?i=python,fastapi,mongodb,html,css,js,vercel,git,github&perline=9" />
 </p>
 
 ## Core Product Features
