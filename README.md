@@ -259,3 +259,10 @@ Convince the judge.
 Beat the leaderboard.
 
 Pass the Reverse Turing Test.
+
+# Things to do ⏳
+- [ ] make it stable
+- [ ] host in some free subdomain
+- [ ] redesign the ui something without neon
+- [ ] add some new features like daily challenges or characteristics
+- [ ] add new things and improve the experience to make it go viral
