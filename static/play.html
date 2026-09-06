@@ -11,6 +11,12 @@
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body class="play" id="body">
+  <!-- Timer progress bar -->
+  <div class="timer-progress" id="timerProgress"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+  <!-- Edge glow effect -->
+  <div class="edge-glow" id="edgeGlow"></div>
+  <!-- Confetti container -->
+  <div class="confetti-container" id="confettiContainer"></div>
   <header class="nav">
     <a class="logo-link" href="/" title="PretendAI">
       <img src="/assets/logo.png" alt="PretendAI" class="logo-img" />
@@ -19,6 +25,7 @@
     <div style="display:flex;gap:6px;align-items:center;flex:1;justify-content:flex-end;min-width:0;overflow:hidden;flex-wrap:nowrap">
       <div class="mode-pill" id="modePill">classic</div>
       <div class="timer" id="timer">5:00</div>
+      <div class="turn-counter" id="turnCounter">Turn 0</div>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
       <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
     </div>
@@ -175,6 +182,8 @@
 
     let session = null, endsAt = 0, finished = false, lastResult = null;
     let initData = { name: 'Anonymous', mode: null };
+    let turnCount = 0;
+    let totalDuration = 300; // will be set from session data
 
     function fmt(s){ s=Math.max(0,s|0); return `${(s/60|0)}:${String(s%60).padStart(2,'0')}`; }
     function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -185,6 +194,24 @@
       timerEl.textContent = fmt(remain);
       timerEl.classList.toggle('warn', remain < 60 && remain >= 20);
       timerEl.classList.toggle('danger', remain < 20);
+      
+      // Timer progress bar
+      const pct = Math.max(0, (remain / totalDuration) * 100);
+      const fill = document.getElementById('timerFill');
+      if (fill) {
+        fill.style.width = pct + '%';
+        fill.classList.toggle('warn', remain < 60 && remain >= 20);
+        fill.classList.toggle('danger', remain < 20);
+      }
+      
+      // Edge glow
+      const glow = document.getElementById('edgeGlow');
+      if (glow) {
+        glow.classList.toggle('active', remain < 60);
+        glow.classList.toggle('warn', remain < 60 && remain >= 20);
+        glow.classList.toggle('danger', remain < 20);
+      }
+      
       if (remain <= 0){ finishTest(); return; }
       requestAnimationFrame(tick);
     }
@@ -200,8 +227,8 @@
 
     function addTypingBubble(){
       const d = document.createElement('div');
-      d.className = 'msg ai_user typing-bubble';
-      d.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      d.className = 'msg ai_user neural-typing';
+      d.innerHTML = '<span class="neural-bar"></span><span class="neural-bar"></span><span class="neural-bar"></span><span class="neural-bar"></span><span class="neural-bar"></span>';
       chat.appendChild(d);
       chat.scrollTop = chat.scrollHeight;
       return d;
@@ -271,6 +298,7 @@
         const data = await r.json();
         session = data.session_id;
         endsAt = data.ends_at;
+        totalDuration = data.ends_at - (Date.now() / 1000);
         if (data.character_name) {
           const targetRole = data.ai_target_role ? ` · Your Role: ${data.ai_target_role}` : '';
           modePill.textContent = `🔥 ${data.character_name}${targetRole}`;
@@ -288,6 +316,9 @@
 
     async function sendReply(text){
       addMsg('player_ai', text);
+      turnCount++;
+      const tc = document.getElementById('turnCounter');
+      if (tc) tc.textContent = 'Turn ' + turnCount;
       sendBtn.disabled = true;
       const bubble = addTypingBubble();
       try {
@@ -325,8 +356,8 @@
       if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); }
     });
 
-    function toast(text, color='linear-gradient(135deg,#f59e0b,#d97706)'){
-      Toastify({ text, duration:2500, gravity:'top', position:'center',
+    function toast(text, color='linear-gradient(135deg,#f59e0b,#d97706)', duration=2500){
+      Toastify({ text, duration, gravity:'top', position:'center',
         style:{ background:color, borderRadius:'10px', padding:'13px 18px', fontWeight:'500', fontSize:'14px' }
       }).showToast();
     }
@@ -360,8 +391,36 @@
     }
 
     function showResult(res){
-      document.getElementById('rFinal').textContent = res.final ?? '--';
-      document.getElementById('rRank').textContent = res.rank ?? '—';
+      // Dramatic score counter roll-up
+      const finalEl = document.getElementById('rFinal');
+      const targetScore = res.final ?? 0;
+      finalEl.textContent = '0';
+      finalEl.parentElement.classList.add('score-reveal');
+      
+      let current = 0;
+      const duration = 1500;
+      const startTime = performance.now();
+      function animateScore(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        current = Math.round(eased * targetScore);
+        finalEl.textContent = current;
+        if (progress < 1) {
+          requestAnimationFrame(animateScore);
+        } else {
+          finalEl.textContent = targetScore;
+          // Confetti burst on high scores
+          if (targetScore >= 80) launchConfetti();
+        }
+      }
+      requestAnimationFrame(animateScore);
+      
+      // Rank stamp animation
+      const rankEl = document.getElementById('rRank');
+      rankEl.textContent = res.rank ?? '—';
+      rankEl.classList.add('rank-stamp');
+      
       document.getElementById('rVerdict').textContent = res.verdict ?? '';
 
       const archEl = document.getElementById('rArchetype');
@@ -406,6 +465,8 @@
       document.getElementById('cardBtn').onclick = () => exportScoreCard(res);
       document.getElementById('chatBtn').onclick = () => exportChat(res);
       document.getElementById('shareBtn').onclick = () => shareScoreCard(res);
+      const shareBtn = document.getElementById('shareBtn');
+      if (shareBtn) shareBtn.classList.add('share-pulse');
     }
 
     /* ── Score card builder with PretendAI logo text ── */
@@ -559,6 +620,25 @@
           toast('Could not copy caption', 'linear-gradient(135deg,#ff6b6b,#ee5a6f)');
         }
       };
+    }
+
+    function launchConfetti() {
+      const container = document.getElementById('confettiContainer');
+      if (!container) return;
+      const colors = ['#7c5cff', '#22d3ee', '#34d399', '#fbbf24', '#ff6b6b', '#a78bfa'];
+      for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.width = (Math.random() * 8 + 6) + 'px';
+        piece.style.height = (Math.random() * 8 + 6) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+        piece.style.animationDelay = (Math.random() * 0.5) + 's';
+        container.appendChild(piece);
+      }
+      setTimeout(() => container.innerHTML = '', 4000);
     }
 
     loadInit();

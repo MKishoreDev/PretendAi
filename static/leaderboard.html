@@ -8,6 +8,11 @@
 <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body class="board" id="body">
+  <div class="orb-container" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
   <header class="nav">
     <a class="logo-link" href="/" title="PretendAI">
       <img src="/assets/logo.png" alt="PretendAI" class="logo-img" />
@@ -26,7 +31,7 @@
   </nav>
 
   <main class="board-wrap">
-    <h1>Most Artificial Minds</h1>
+    <h1><span class="shimmer-text">Leaderboard</span></h1>
     <p class="sub" style="margin-top:8px">Top scores and the latest attempts. Pick a mode.</p>
 
     <div class="tabs" id="modeTabs">
