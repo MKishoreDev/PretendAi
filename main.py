@@ -65,14 +65,20 @@ app = FastAPI(title="PretendAI")
 
 @app.on_event("startup")
 async def startup():
-    """Initialise the database collections and indexes on server start."""
-    init_db()
+    """Initialise database collections and indexes on server start without blocking startup."""
+    try:
+        init_db()
+    except Exception as e:
+        print(f"Startup warning: MongoDB init failed ({e}). App running with fallback.")
 
 
 @app.on_event("shutdown")
 async def shutdown():
     """Close the MongoDB connection cleanly when the server stops."""
-    close_db()
+    try:
+        close_db()
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
