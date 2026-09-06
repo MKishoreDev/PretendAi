@@ -57,9 +57,15 @@
   <!-- results overlay -->
   <div id="overlay" class="overlay hidden">
     <div class="result-card">
+      <div id="challengerBanner" style="display:none;background:linear-gradient(135deg,rgba(124,92,255,0.2),rgba(255,107,107,0.2));border:1px solid rgba(124,92,255,0.4);border-radius:10px;padding:10px 14px;margin-bottom:16px;text-align:center">
+        <span id="challengerText" style="font-weight:700;font-size:14px;color:#fff">⚔️ You vs Challenger</span>
+      </div>
       <div class="result-head">
         <div class="big-score"><span id="rFinal">--</span><small>/100</small></div>
-        <div class="rank-pill" id="rRank">—</div>
+        <div>
+          <div class="rank-pill" id="rRank">—</div>
+          <div id="rArchetype" style="margin-top:6px;font-size:12px;color:#7c5cff;font-weight:700"></div>
+        </div>
       </div>
       <p id="rVerdict" class="verdict"></p>
       <div class="bars" id="rBars"></div>
@@ -70,9 +76,31 @@
       <div class="actions">
         <a href="/" class="btn">Try again</a>
         <a href="/leaderboard" class="btn ghost">Leaderboard</a>
-        <button id="shareBtn" class="btn" type="button">🚀 Share Score</button>
+        <button id="shareBtn" class="btn" style="background:linear-gradient(135deg,#7c5cff,#ff6b6b);color:#fff" type="button">🚀 Share Score Card</button>
         <button id="cardBtn" class="btn ghost" type="button">⬇ Score Card</button>
         <button id="chatBtn" class="btn ghost" type="button">⬇ Chat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- share modal overlay -->
+  <div id="shareModal" class="overlay hidden" style="z-index:9999;background:rgba(10,10,18,0.85);backdrop-filter:blur(12px)">
+    <div class="result-card" style="max-width:520px;text-align:center;position:relative;padding:24px">
+      <button id="closeShareModal" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+      <span style="background:rgba(124,92,255,0.2);color:#7c5cff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:0.5px">SHARE YOUR ARTIFICIAL MIND</span>
+      <h3 style="margin:10px 0 16px 0;font-size:22px">Your Score Card</h3>
+      
+      <div id="cardPreviewBox" style="margin-bottom:20px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);background:#0a0a12;display:flex;justify-content:center;max-height:360px">
+        <!-- Rendered Image injected here -->
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <button id="tweetBtn" class="btn" style="background:#1da1f2;color:#fff;font-weight:700;border:none" type="button">🐦 Post to X (Twitter)</button>
+        <button id="challengeBtn" class="btn" style="background:linear-gradient(135deg,#7c5cff,#ff6b6b);color:#fff;font-weight:700;border:none" type="button">⚔️ Challenge Friend</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button id="copyCaptionBtn" class="btn ghost" style="font-size:13px" type="button">📋 Copy Caption</button>
+        <button id="downloadCardBtn" class="btn ghost" style="font-size:13px" type="button">⬇ Download PNG</button>
       </div>
     </div>
   </div>
@@ -206,7 +234,12 @@
     }
 
     function loadInit(){
-      try { Object.assign(initData, JSON.parse(sessionStorage.getItem('pa_init') || '{}')); } catch {}
+      try {
+        Object.assign(initData, JSON.parse(sessionStorage.getItem('pa_init') || '{}'));
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('challenge')) initData.challenge_id = urlParams.get('challenge');
+        if (urlParams.get('mode')) initData.mode = urlParams.get('mode');
+      } catch {}
     }
 
     function askMode(){
@@ -226,18 +259,25 @@
     }
 
     async function start(){
-      modePill.textContent = initData.mode;
+      modePill.textContent = initData.mode || 'classic';
       const bubble = addTypingBubble();
       try {
         const r = await fetch('/api/start', {
           method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ name: initData.name, mode: initData.mode })
+          body: JSON.stringify({ name: initData.name, mode: initData.mode, challenge_id: initData.challenge_id })
         });
         if (r.status === 503){ bubble.remove(); addMsg('ai_user', 'AI is busy right now. Wait 10s and refresh.'); return; }
         if (!r.ok) throw new Error('start');
         const data = await r.json();
         session = data.session_id;
         endsAt = data.ends_at;
+        if (data.character_name) {
+          const targetRole = data.ai_target_role ? ` · Your Role: ${data.ai_target_role}` : '';
+          modePill.textContent = `🔥 ${data.character_name}${targetRole}`;
+          if (data.ai_target_role) {
+            toast(`🎭 MISSION: You are acting as ${data.ai_target_role}! Convince ${data.character_name}.`, 'linear-gradient(135deg,#7c5cff,#ff6b6b)', 10000);
+          }
+        }
         await showAiMessage(bubble, data.opening);
         tick();
       } catch {
@@ -271,10 +311,10 @@
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const v = input.value.trim();
-      if (!v || !session || finished) return;
+      const text = input.value.trim();
+      if (!text || sendBtn.disabled) return;
       input.value = ''; input.style.height='auto';
-      sendReply(v);
+      sendReply(text);
     });
 
     input.addEventListener('input', () => {
@@ -294,9 +334,9 @@
     input.addEventListener('copy', e => { if(session && !finished){ e.preventDefault(); toast('Copy disabled during test 🤖'); }});
     input.addEventListener('paste', e => { if(session && !finished){ e.preventDefault(); toast('Paste disabled — write it yourself! 🤖'); }});
 
-    endBtn.addEventListener('click', e => { e.preventDefault(); endWarningModal.classList.remove('hidden'); });
-    confirmEndBtn.addEventListener('click', () => { endWarningModal.classList.add('hidden'); location.href='/'; });
-    cancelEndBtn.addEventListener('click', () => { endWarningModal.classList.add('hidden'); input.focus(); });
+    endBtn.onclick = () => endWarningModal.classList.remove('hidden');
+    cancelEndBtn.onclick = () => endWarningModal.classList.add('hidden');
+    confirmEndBtn.onclick = () => { endWarningModal.classList.add('hidden'); finishTest(); };
 
     async function finishTest(){
       if (finished) return;
@@ -323,6 +363,28 @@
       document.getElementById('rFinal').textContent = res.final ?? '--';
       document.getElementById('rRank').textContent = res.rank ?? '—';
       document.getElementById('rVerdict').textContent = res.verdict ?? '';
+
+      const archEl = document.getElementById('rArchetype');
+      if (res.archetype && res.archetype.name) {
+        archEl.textContent = `${res.archetype.icon || '🤖'} ${res.archetype.name}`;
+      } else {
+        archEl.textContent = '';
+      }
+
+      if (res.challenger) {
+        const cBanner = document.getElementById('challengerBanner');
+        const cText = document.getElementById('challengerText');
+        cBanner.style.display = 'block';
+        const diff = (res.final || 0) - (res.challenger.final || 0);
+        if (diff > 0) {
+          cText.textContent = `🎉 VICTORY! You scored ${res.final} vs ${res.challenger.name}'s ${res.challenger.final} (+${diff} pts)`;
+        } else if (diff < 0) {
+          cText.textContent = `⚔️ CHALLENGE RESULT: You scored ${res.final} vs ${res.challenger.name}'s ${res.challenger.final}`;
+        } else {
+          cText.textContent = `🤝 TIED SCORE! You both scored ${res.final}/100`;
+        }
+      }
+
       const bars = document.getElementById('rBars');
       bars.innerHTML = '';
       const labels = {
@@ -358,6 +420,9 @@
         `<div class="x-bar"><span>${labels[k]||k}</span><div class="x-track"><span class="x-fill" style="width:${v}%"></span></div><b>${v}</b></div>`
       ).join('');
       const avg = res.avg_reply_ms ? (res.avg_reply_ms/1000).toFixed(1)+'s' : '—';
+      const charBadge = res.character_name ? ` · 🔥 ${escapeHtml(res.character_name)}` : '';
+      const archBadge = res.archetype?.name ? `<div style="font-size:13px;color:#7c5cff;font-weight:700;margin-top:4px">${res.archetype.icon||'🤖'} ${escapeHtml(res.archetype.name)}</div>` : '';
+
       const node = document.createElement('div');
       node.className = 'x-card';
       node.innerHTML = `
@@ -366,11 +431,12 @@
             <img src="/assets/logo.png" class="x-logo-img" alt="" />
             <span class="xb-pretend">Pretend</span><span class="xb-ai">AI</span>
           </div>
-          <div class="x-mode">${escapeHtml(res.mode||'classic')}</div>
+          <div class="x-mode">${escapeHtml(res.mode||'classic')}${charBadge}</div>
         </div>
         <div class="x-name">${escapeHtml(res.name||'Anonymous')}</div>
         <div class="x-score">${res.final ?? '--'}<small>/100</small></div>
         <div class="x-rank">${escapeHtml(res.rank||'—')}</div>
+        ${archBadge}
         <div class="x-verdict">"${escapeHtml(res.verdict||'')}"</div>
         <div class="x-bars">${bars}</div>
         <div class="x-meta">
@@ -440,65 +506,59 @@
       nodeToPng(node, `pretendai-chat-${(res.name||'me').toLowerCase()}.png`);
     }
 
-    /* ── Share: image + compelling text together ── */
+    /* ── Share Modal & Intent Actions ── */
     async function shareScoreCard(res){
       const score = res.final || 0;
       const rank = res.rank || 'AI Model';
       const mode = res.mode || 'classic';
-
-      const hooks = [
-        `🤖 I just scored ${score}/100 on PretendAI — ranked "${rank}". Can you beat me?`,
-        `😤 ${score}/100 as a "${rank}" on PretendAI. I think I might actually be an AI. Your turn →`,
-        `🧠 Tried to pretend I was an AI and scored ${score}/100 (${mode} mode). Challenge accepted?`,
-        `👀 They said I scored "${rank}" (${score}/100) on PretendAI. Apparently I think like an AI. Do you?`
-      ];
-      const shareText = hooks[score > 80 ? 0 : score > 60 ? 1 : score > 40 ? 2 : 3];
-      const url = window.location.origin;
+      const archName = res.archetype?.name || rank;
+      const archIcon = res.archetype?.icon || '🤖';
+      const charName = res.character_name ? ` (${res.character_name})` : '';
 
       const node = buildScoreCard(res);
+      const modal = document.getElementById('shareModal');
+      const previewBox = document.getElementById('cardPreviewBox');
+      previewBox.innerHTML = '<div style="color:var(--muted);padding:30px">Generating card preview...</div>';
+      modal.classList.remove('hidden');
 
-      // small delay for render
-      await new Promise(r => setTimeout(r, 200));
+      const challengeUrl = `${window.location.origin}/play?challenge=${res.session_id||''}`;
 
       try {
-        const blob = await nodeToBlob(node);
-        const file = new File([blob], 'pretendai-score.png', { type: 'image/png' });
+        const dataUrl = await htmlToImage.toPng(node, { pixelRatio: 2, backgroundColor: '#0a0a12' });
+        previewBox.innerHTML = `<img src="${dataUrl}" style="max-width:100%;max-height:340px;border-radius:8px;object-fit:contain" />`;
 
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          // Share image + text together
-          await navigator.share({
-            title: `PretendAI — I scored ${score}/100`,
-            text: `${shareText}\n\n${url}`,
-            files: [file]
-          });
-        } else if (navigator.share) {
-          // Fallback: share text only
-          await navigator.share({
-            title: `PretendAI — I scored ${score}/100`,
-            text: `${shareText}\n\n${url}`
-          });
-          // Also trigger download
-          const dataUrl = await htmlToImage.toPng(node, { pixelRatio: 2, backgroundColor: '#0a0a12' });
-          const a = document.createElement('a');
-          a.href = dataUrl; a.download = 'pretendai-score.png'; a.click();
-        } else {
-          // Desktop: download image + copy text
-          const dataUrl = await htmlToImage.toPng(node, { pixelRatio: 2, backgroundColor: '#0a0a12' });
-          const a = document.createElement('a'); a.href = dataUrl; a.download = 'pretendai-score.png'; a.click();
-          try {
-            await navigator.clipboard.writeText(`${shareText}\n\n${url}`);
-            toast('Score card downloaded + caption copied! 🎉', 'linear-gradient(135deg,#10b981,#059669)');
-          } catch {
-            toast(`Share this: ${shareText}`, 'linear-gradient(135deg,#7c5cff,#5f3dc4)');
-          }
-        }
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          toast('Could not share. Try Download instead.', 'linear-gradient(135deg,#ff6b6b,#ee5a6f)');
-        }
-      } finally {
-        document.getElementById('exportRoot').innerHTML = '';
+        document.getElementById('downloadCardBtn').onclick = () => {
+          const a = document.createElement('a'); a.href = dataUrl; a.download = `pretendai-${(res.name||'me').toLowerCase()}-${score}.png`; a.click();
+        };
+      } catch (e) {
+        previewBox.innerHTML = '<div style="color:var(--muted);padding:30px">Card preview ready</div>';
       }
+
+      document.getElementById('closeShareModal').onclick = () => modal.classList.add('hidden');
+
+      const tweetCaption = `🔥 I just scored ${score}/100 on PretendAI as ${archIcon} "${archName}"${charName}!\n\nCan you beat my artificial score? Challenge me 👇\n${challengeUrl}`;
+
+      document.getElementById('tweetBtn').onclick = () => {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetCaption)}`, '_blank');
+      };
+
+      document.getElementById('challengeBtn').onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(challengeUrl);
+          toast('⚔️ Challenge link copied to clipboard!', 'linear-gradient(135deg,#7c5cff,#5f3dc4)');
+        } catch {
+          toast(`Share this link: ${challengeUrl}`, 'linear-gradient(135deg,#7c5cff,#5f3dc4)');
+        }
+      };
+
+      document.getElementById('copyCaptionBtn').onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(tweetCaption);
+          toast('📋 Caption copied to clipboard!', 'linear-gradient(135deg,#10b981,#059669)');
+        } catch {
+          toast('Could not copy caption', 'linear-gradient(135deg,#ff6b6b,#ee5a6f)');
+        }
+      };
     }
 
     loadInit();

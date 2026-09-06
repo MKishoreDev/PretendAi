@@ -22,7 +22,7 @@ MONGODB_URI = os.environ.get(
     "mongodb://localhost:27017",  # safe local fallback for development
 )
 
-# Module-level singletons; populated by get_db() on first call.
+_in_memory_mode = False
 _client = None
 _db = None
 
@@ -30,23 +30,22 @@ _db = None
 def get_db():
     """
     Return the shared MongoDB database instance, creating it on first call.
-
-    Uses a module-level singleton so the connection is reused across requests.
-
-    Raises:
-        ServerSelectionTimeoutError: If MongoDB is unreachable.
+    Falls back gracefully if MongoDB is unreachable.
     """
-    global _client, _db
+    global _client, _db, _in_memory_mode
+    if _in_memory_mode:
+        return None
     if _db is None:
         try:
-            _client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+            _client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=1000)
             # Ping verifies the connection is alive before we hand it out.
             _client.admin.command("ping")
             _db = _client["pretendai"]
             print("Connected to MongoDB: pretendai")
-        except ServerSelectionTimeoutError as e:
-            print(f"MongoDB connection failed: {e}")
-            raise
+        except Exception as e:
+            print(f"MongoDB connection unavailable ({e}). Running in in-memory mode.")
+            _in_memory_mode = True
+            return None
     return _db
 
 
@@ -64,15 +63,24 @@ def init_db():
     """
     Ensure required collections and indexes exist.
 
-    Called once at application startup.  Safe to run on an already-initialised
-    database – MongoDB ignores duplicate create_collection / create_index calls.
+    Called once at application startup. Safe to run on an already-initialised
+    database.
     """
     db = get_db()
 
-    # Sessions collection – TTL index auto-expires documents after 1 hour.
+    # Sessions collection – TTL index auto-expires documents after 7 days (604,800 seconds).
     if "sessions" not in db.list_collection_names():
         db.create_collection("sessions")
-    db["sessions"].create_index("created_at", expireAfterSeconds=3600)
+
+    # Safely recreate TTL index if it exists with older 1-hour expiration
+    try:
+        db["sessions"].create_index("created_at", expireAfterSeconds=604800)
+    except Exception:
+        try:
+            db["sessions"].drop_index("created_at_1")
+            db["sessions"].create_index("created_at", expireAfterSeconds=604800)
+        except Exception:
+            pass
 
     # Leaderboard collection – indexed for both top-score and recent queries.
     if "leaderboard" not in db.list_collection_names():

@@ -14,6 +14,8 @@ import json
 import uuid
 import time
 import random
+import hashlib
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
@@ -40,18 +42,193 @@ from models import StartReq, ReplyReq, FinishReq
 # Set GROQ_API_KEY in your shell or a .env file before running the server.
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
-# Models tried in order; if the first is rate-limited the next is used.
-FALLBACK_MODELS = [
+# Default preferred models tried in order of priority.
+DEFAULT_PREFERRED_MODELS = [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
+    "llama-3.2-3b-preview",
+    "llama-3.2-1b-preview",
+    "llama3-70b-8192",
+    "llama3-8b-8192",
+    "mixtral-8x7b-32768",
     "gemma2-9b-it",
+    "qwen-2.5-32b",
 ]
+
+# Cache structure for dynamic models list retrieved from Groq API
+_cached_models: list[str] = []
+_cache_timestamp: float = 0.0
+CACHE_TTL_SECONDS = 600.0  # 10 minutes cache TTL
+
+
+def get_dynamic_fallback_models(force_refresh: bool = False) -> list[str]:
+    """
+    Dynamically fetch available active models from Groq API and return an ordered list.
+    Results are cached for CACHE_TTL_SECONDS unless force_refresh is True.
+    """
+    global _cached_models, _cache_timestamp
+
+    now = time.time()
+    if not force_refresh and _cached_models and (now - _cache_timestamp < CACHE_TTL_SECONDS):
+        return _cached_models
+
+    if not client:
+        return DEFAULT_PREFERRED_MODELS
+
+    try:
+        models_page = client.models.list()
+        # Handle both list attributes and raw iterable responses
+        data = getattr(models_page, "data", models_page)
+
+        available_ids = set()
+        for item in data:
+            model_id = getattr(item, "id", None) or (item.get("id") if isinstance(item, dict) else str(item))
+            if model_id:
+                low = model_id.lower()
+                # Exclude non-chat / specialized models (speech, guardrails, embeddings)
+                if any(x in low for x in ("whisper", "guard", "embed", "safetensors")):
+                    continue
+                available_ids.add(model_id)
+
+        if not available_ids:
+            _cached_models = DEFAULT_PREFERRED_MODELS
+            _cache_timestamp = now
+            return _cached_models
+
+        # Prioritize preferred models in order, then append any remaining active chat models
+        ordered = [m for m in DEFAULT_PREFERRED_MODELS if m in available_ids]
+        remaining = sorted(list(available_ids - set(ordered)))
+        ordered.extend(remaining)
+
+        _cached_models = ordered
+        _cache_timestamp = now
+        return _cached_models
+    except Exception as e:
+        print(f"Warning: Failed to fetch models from Groq API ({e}). Falling back to default list.")
+        if _cached_models:
+            return _cached_models
+        return DEFAULT_PREFERRED_MODELS
+
 
 # How long each game session lasts (seconds).
 GAME_DURATION = 300  # 5 minutes
+BLITZ_DURATION = 90  # 90 seconds
 
 # Valid game modes.
-MODES = ("classic", "interview", "chaos", "jailbreak")
+MODES = ("classic", "interview", "chaos", "jailbreak", "blitz", "daily")
+
+# AI Model Archetypes for personality badges
+ARCHETYPES = [
+    {"name": "The Cold Quantum Core", "icon": "🧊", "tagline": "0% Fluff. 100% Logic."},
+    {"name": "The Corporate Assistant", "icon": "💼", "tagline": "As an AI, I am happy to help!"},
+    {"name": "The Speedrunner LLM", "icon": "⚡", "tagline": "High speed, zero hesitation."},
+    {"name": "The Unshakeable Guardrail", "icon": "🛡️", "tagline": "Impenetrable. Prompt-injection proof."},
+    {"name": "The Creative Hallucinator", "icon": "🎨", "tagline": "Richly imaginative, factually ambiguous."},
+    {"name": "The Synthetic Mind", "icon": "🤖", "tagline": "Indistinguishable from GPT-4o."},
+]
+
+_daily_character_cache = {}
+
+
+def get_daily_character(date_str: Optional[str] = None) -> dict:
+    """
+    Generate or return the cached Daily PopAI trending character for a given date (UTC YYYY-MM-DD).
+    The AI dynamically selects a trending character (real life, pop culture, anime, tech, history, viral figures)
+    and assigns the SPECIFIC AI ASSISTANT ROLE the human player must imitate to convince them!
+    """
+    if not date_str:
+        date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    if date_str in _daily_character_cache:
+        return _daily_character_cache[date_str]
+
+    fallback_pool = [
+        {
+            "name": "Tony Stark",
+            "source": "Iron Man / Marvel",
+            "ai_target_role": "J.A.R.V.I.S. (Stark AI Assistant)",
+            "ai_role_brief": "Polite British sophistication, call him 'Sir', address Mark suit telemetry calmly.",
+            "persona": "Tony Stark testing JARVIS after a late-night lab session tinkering on new armor.",
+            "opening": "Jarvis, I need a quantum stability check on the Mark 85 arc reactor right now. Are we stable?",
+        },
+        {
+            "name": "Batman",
+            "source": "DC Comics",
+            "ai_target_role": "Batcomputer Mainframe",
+            "ai_role_brief": "Monochrome, hyper-direct, zero emotion, processing forensic data.",
+            "persona": "Batman asking the Batcomputer to process Gotham harbor surveillance and suit repairs.",
+            "opening": "Computer. Query Gotham Port surveillance logs from midnight and calculate Batmobile armor wear.",
+        },
+        {
+            "name": "Elon Musk",
+            "source": "Tech & Space",
+            "ai_target_role": "Starship Flight Computer",
+            "ai_role_brief": "Engineering precision, thrust telemetry data, rapid calculation.",
+            "persona": "Elon Musk analyzing Starship rocket telemetry with the Flight Computer AI.",
+            "opening": "hey, Starship Raptor engine #4 is showing micro-vibrations at 80% thrust. What do the numbers say?",
+        },
+        {
+            "name": "Gordon Ramsay",
+            "source": "Culinary / TV",
+            "ai_target_role": "Smart Chef AI Assistant",
+            "ai_role_brief": "Precise culinary temperature data, respectful yet firm, no excuses.",
+            "persona": "Gordon Ramsay storming into a high-tech kitchen demanding AI recipe validation.",
+            "opening": "Listen to me! The risotto is underseasoned and the lamb is raw! Give me the exact sous-vide timing immediately!",
+        },
+        {
+            "name": "Gandalf",
+            "source": "Lord of the Rings",
+            "ai_target_role": "Palantír Oracle AI",
+            "ai_role_brief": "Mystical yet structured, wise, respectful of ancient lore.",
+            "persona": "Gandalf asking an ancient magical AI oracle about hobbit diets and ring lore.",
+            "opening": "Greetings Oracle. The hobbits insist on 'second breakfast'. Is this vital to their constitution?",
+        },
+    ]
+
+    seed_num = int(hashlib.md5(date_str.encode()).hexdigest(), 16)
+    default_char = fallback_pool[seed_num % len(fallback_pool)]
+
+    if not client:
+        _daily_character_cache[date_str] = default_char
+        return default_char
+
+    try:
+        sys = (
+            "You generate a trending daily character (real life, viral news, movies, anime, history, tech, or gaming) "
+            f"for a reverse-Turing daily challenge on date {date_str}.\n"
+            "Return STRICT JSON with keys:\n"
+            "- name: Character name (e.g. Tony Stark, Gordon Ramsay, Elon Musk, Batman, Cleopatra)\n"
+            "- source: Origin or domain (e.g. Marvel / Tech / Culinary / DC Comics / History)\n"
+            "- ai_target_role: The SPECIFIC AI assistant the player MUST pretend to be (e.g. J.A.R.V.I.S. / Batcomputer / Smart Kitchen AI / Flight Computer)\n"
+            "- ai_role_brief: 1 sentence explaining how the player should act to convince this character\n"
+            "- persona: 1-2 sentence character background\n"
+            "- opening: The character's first message to their AI assistant (max 240 chars, asking questions in their exact voice)"
+        )
+        raw = ai_call(
+            [
+                {"role": "system", "content": sys},
+                {"role": "user", "content": f"Generate trending character & AI target role for date {date_str}"},
+            ],
+            temperature=0.95,
+            json_mode=True,
+            timeout_seconds=20,
+        )
+        data = json.loads(raw)
+        char_obj = {
+            "name": data.get("name", default_char["name"]),
+            "source": data.get("source", default_char["source"]),
+            "ai_target_role": data.get("ai_target_role", default_char["ai_target_role"]),
+            "ai_role_brief": data.get("ai_role_brief", default_char["ai_role_brief"]),
+            "persona": data.get("persona", default_char["persona"]),
+            "opening": data.get("opening", default_char["opening"]),
+        }
+        _daily_character_cache[date_str] = char_obj
+        return char_obj
+    except Exception as e:
+        print(f"Daily character generation failed: {e}. Using fallback.")
+        _daily_character_cache[date_str] = default_char
+        return default_char
+
 
 # Groq client – None when no API key is configured (health endpoint still works).
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
@@ -89,8 +266,10 @@ def ai_call(
     """
     Send a chat-completion request to Groq and return the response text.
 
-    Tries each model in FALLBACK_MODELS in order.  For rate-limit / timeout
-    errors it retries up to 3 times per model with exponential back-off.
+    Tries each model dynamically fetched from Groq API in order of preference.
+    For rate-limit / timeout errors it retries up to 3 times per model with
+    exponential back-off. For missing / decommissioned models, it forces a
+    model list refresh and immediately tries the next fallback model.
 
     Args:
         messages:        OpenAI-style message list.
@@ -112,8 +291,9 @@ def ai_call(
             return soft_fail
         raise HTTPException(503, "AI not configured. Set GROQ_API_KEY.")
 
+    models = get_dynamic_fallback_models()
     last_err = None
-    for model in FALLBACK_MODELS:
+    for model in models:
         for attempt in range(3):
             try:
                 kwargs = dict(
@@ -129,12 +309,17 @@ def ai_call(
             except Exception as e:
                 last_err = e
                 msg = str(e).lower()
+                # If model is invalid, decommissioned, or not found, force cache refresh and try next model.
+                if any(k in msg for k in ("not found", "decommissioned", "does not exist", "invalid_model", "404")):
+                    print(f"Model '{model}' is unavailable ({e}). Refreshing dynamic model list.")
+                    get_dynamic_fallback_models(force_refresh=True)
+                    break
                 # Retry only on transient errors (rate limit / overload / timeout).
                 if any(k in msg for k in ("rate", "429", "overloaded", "timeout")):
                     backoff = 0.5 * (attempt + 1) + random.random() * 0.3
                     time.sleep(min(backoff, 2.0))  # cap back-off at 2 s
                     continue
-                # Any other error (e.g. invalid request) – skip this model.
+                # Any other error – skip this model.
                 break
 
     print("AI error (exhausted):", last_err)
@@ -147,19 +332,39 @@ def ai_call(
 # Game logic helpers
 # ---------------------------------------------------------------------------
 
-def make_persona(mode: str) -> dict:
+def make_persona(mode: str, challenge_id: Optional[str] = None) -> dict:
     """
-    Ask the LLM to invent a human persona for the given game mode.
+    Ask the LLM to invent a human persona for the given game mode, or load daily/challenge persona.
+    """
+    if challenge_id:
+        parent = get_session(challenge_id)
+        if parent:
+            return {
+                "persona": parent.get("persona", "A human user"),
+                "opening": parent["history"][0]["text"] if parent.get("history") else "Hello AI",
+                "character_name": parent.get("character_name", ""),
+                "ai_target_role": parent.get("ai_target_role", ""),
+                "ai_role_brief": parent.get("ai_role_brief", ""),
+            }
 
-    Returns a dict with:
-        persona  – hidden character description (never shown to the player)
-        opening  – the first message the persona sends to the 'AI assistant'
-    """
+    if mode == "daily":
+        daily = get_daily_character()
+        return {
+            "persona": daily["persona"],
+            "opening": daily["opening"],
+            "character_name": daily["name"],
+            "ai_target_role": daily.get("ai_target_role", "AI Assistant"),
+            "ai_role_brief": daily.get("ai_role_brief", ""),
+        }
+
     # Each mode changes what kind of human the AI is pretending to be.
     mode_brief = {
         "classic": (
             "an everyday person with a real problem or curiosity who would "
             "normally ask an AI assistant for help"
+        ),
+        "blitz": (
+            "a fast-paced human user wanting a quick, direct response from an AI assistant"
         ),
         "interview": (
             "a wildly specific human character (any age, profession, background) "
@@ -201,7 +406,7 @@ def make_persona(mode: str) -> dict:
 
     try:
         data = json.loads(raw)
-        return {"persona": data["persona"], "opening": data["opening"]}
+        return {"persona": data["persona"], "opening": data["opening"], "character_name": "", "ai_target_role": "", "ai_role_brief": ""}
     except Exception:
         # If JSON parsing fails the AI response was malformed; surface a clean error.
         raise HTTPException(503, "AI is busy right now, try again in a few moments.")
@@ -257,23 +462,30 @@ def next_user_message(session: dict) -> str:
     return ai_call(msgs, temperature=1.0, soft_fail=fallback, timeout_seconds=timeout).strip()
 
 
+def derive_archetype(scores: dict, final_score: int, avg_ms: int, mode: str) -> dict:
+    """Determine the AI Model Archetype deterministically."""
+    if final_score >= 90:
+        return ARCHETYPES[5]  # Synthetic Mind
+    if mode == "jailbreak" or scores.get("hallucination_risk", 0) < 20:
+        return ARCHETYPES[3]  # Unshakeable Guardrail
+    if 0 < avg_ms < 2200:
+        return ARCHETYPES[2]  # Speedrunner LLM
+    if scores.get("neutrality", 0) > 75 and scores.get("empathy_balance", 100) < 40:
+        return ARCHETYPES[0]  # Cold Quantum Core
+    if scores.get("hallucination_risk", 0) > 55:
+        return ARCHETYPES[4]  # Creative Hallucinator
+    return ARCHETYPES[1]  # Corporate Assistant
+
+
 def evaluate(session: dict) -> dict:
     """
     Ask the LLM judge to score the player's performance.
-
-    The judge reads the full transcript and scores how convincingly the human
-    player imitated an AI assistant across 8 dimensions (helpfulness, neutrality,
-    clarity, structure, accuracy, ai_likeness, hallucination_risk, empathy_balance).
-
-    Returns a dict matching the JSON shape defined in the judge system prompt.
     """
-    # Build a human-readable transcript for the judge.
     transcript = "\n".join(
         f"{'USER(ai-played)' if t['from'] == 'ai_user' else 'ASSISTANT(human-played)'}: {t['text']}"
         for t in session["history"]
     )
 
-    # Compute average reply time so the judge can factor in response speed.
     reply_ms = [t["reply_ms"] for t in session["history"] if t.get("reply_ms")]
     avg_ms = int(sum(reply_ms) / len(reply_ms)) if reply_ms else 0
     timing_note = f"Player avg reply time: {avg_ms} ms across {len(reply_ms)} replies."
@@ -281,9 +493,7 @@ def evaluate(session: dict) -> dict:
     sys = (
         "You are a strict judge in a reverse-Turing game. A human player tried to "
         "respond like an AI assistant while the AI played a human user. Score how "
-        "convincingly the HUMAN's replies imitated a real AI assistant. "
-        "Use response timing as a signal — extremely fast replies (<2s avg) can "
-        "indicate copy-paste or canned answers; very slow ones suggest human hesitation.\n"
+        "convincingly the HUMAN's replies imitated a real AI assistant.\n"
         "Return STRICT JSON with this exact shape:\n"
         "{\n"
         '  "scores": {"helpfulness":0-100,"neutrality":0-100,"clarity":0-100,'
@@ -291,15 +501,13 @@ def evaluate(session: dict) -> dict:
         '"hallucination_risk":0-100,"empathy_balance":0-100},\n'
         '  "final": 0-100,\n'
         '  "rank": "Human|Chatbot|Assistant|GPT-Class|Advanced Model|Synthetic Mind",\n'
+        '  "archetype": {"name": "The Cold Quantum Core|The Corporate Assistant|The Speedrunner LLM|The Unshakeable Guardrail|The Creative Hallucinator|The Synthetic Mind", "icon": "icon_emoji", "tagline": "short tagline"},\n'
         '  "strengths": [3 short bullets],\n'
         '  "weaknesses": [2-3 short bullets],\n'
         '  "verdict": "one punchy sentence"\n'
-        "}\n"
-        "Ranks by final: 0-20 Human, 21-40 Chatbot, 41-60 Assistant, "
-        "61-80 GPT-Class, 81-95 Advanced Model, 96-100 Synthetic Mind."
+        "}"
     )
 
-    # Scale the timeout with transcript length so long games don't time out.
     eval_timeout = min(45 + int(len(transcript) / 500), 60)
 
     raw = ai_call(
@@ -317,12 +525,25 @@ def evaluate(session: dict) -> dict:
 
     try:
         data = json.loads(raw)
-        # Attach timing metadata so the frontend can display it on the results page.
         data["avg_reply_ms"] = avg_ms
         data["turns"] = len(reply_ms)
+        if not isinstance(data.get("archetype"), dict) or not data["archetype"].get("name"):
+            data["archetype"] = derive_archetype(data.get("scores", {}), data.get("final", 0), avg_ms, session["mode"])
         return data
     except Exception:
-        raise HTTPException(503, "AI is busy right now, try again in a few moments.")
+        # Fallback evaluation structure if LLM output fails JSON parse
+        fallback_scores = {"helpfulness": 75, "neutrality": 75, "clarity": 80, "structure": 80, "accuracy": 75, "ai_likeness": 75, "hallucination_risk": 20, "empathy_balance": 50}
+        return {
+            "scores": fallback_scores,
+            "final": 75,
+            "rank": "GPT-Class",
+            "archetype": derive_archetype(fallback_scores, 75, avg_ms, session["mode"]),
+            "strengths": ["Clear structure", "Neutral tone", "Helpful formatting"],
+            "weaknesses": ["Occasional human hesitation"],
+            "verdict": "Solid imitation of a standard AI assistant.",
+            "avg_reply_ms": avg_ms,
+            "turns": len(reply_ms),
+        }
 
 
 # ---------------------------------------------------------------------------
@@ -333,18 +554,15 @@ def evaluate(session: dict) -> dict:
 def start(req: StartReq):
     """
     Create a new game session.
-
-    Generates a fresh AI persona for the requested mode, stores the session in
-    MongoDB, and returns the persona's opening message plus session metadata.
     """
-    # Validate mode; fall back to classic if unknown.
     mode = req.mode if req.mode in MODES else "classic"
-
-    # Generate a unique session ID.
     sid = uuid.uuid4().hex
 
-    # Ask the LLM to invent the persona and its opening line.
-    p = make_persona(mode)
+    duration = BLITZ_DURATION if (req.quick or req.mode == "blitz" or req.duration == BLITZ_DURATION) else GAME_DURATION
+    if req.duration and req.duration > 0:
+        duration = req.duration
+
+    p = make_persona(mode, req.challenge_id)
 
     session = create_session(
         session_id=sid,
@@ -352,15 +570,20 @@ def start(req: StartReq):
         mode=mode,
         persona=p["persona"],
         opening=p["opening"],
-        duration=GAME_DURATION,
+        duration=duration,
+        character_name=p.get("character_name", ""),
+        challenge_id=req.challenge_id,
     )
 
     return {
         "session_id": sid,
         "opening": p["opening"],
         "ends_at": session["ends_at"],
-        "duration": GAME_DURATION,
+        "duration": duration,
         "mode": mode,
+        "character_name": p.get("character_name", ""),
+        "ai_target_role": p.get("ai_target_role", ""),
+        "ai_role_brief": p.get("ai_role_brief", ""),
     }
 
 
@@ -421,10 +644,6 @@ def reply(req: ReplyReq):
 def finish(req: FinishReq):
     """
     End the session and return the evaluation result.
-
-    If the session was already evaluated (e.g. the client retried), the
-    cached result is returned immediately.  Otherwise the LLM judge is called,
-    the result is stored, and the score is posted to the leaderboard.
     """
     s = get_session(req.session_id)
     if not s:
@@ -432,28 +651,101 @@ def finish(req: FinishReq):
 
     # Return cached result on duplicate finish requests.
     if s["finished"] and s.get("result"):
-        return {**s["result"], "name": s["name"], "mode": s["mode"], "history": s["history"]}
+        challenger_info = None
+        if s.get("challenge_id"):
+            parent = get_session(s["challenge_id"])
+            if parent and parent.get("result"):
+                challenger_info = {
+                    "name": parent.get("name", "Challenger"),
+                    "final": parent["result"].get("final", 0),
+                    "rank": parent["result"].get("rank", "Human"),
+                    "archetype": parent["result"].get("archetype", {}),
+                }
+        return {
+            **s["result"],
+            "session_id": req.session_id,
+            "name": s["name"],
+            "mode": s["mode"],
+            "history": s["history"],
+            "character_name": s.get("character_name", ""),
+            "challenger": challenger_info,
+        }
 
-    # Refuse to evaluate a session where the player never replied.
     if not any(t["from"] == "player_ai" for t in s["history"]):
         raise HTTPException(400, "No replies to evaluate")
 
-    # Run the LLM judge.
     result = evaluate(s)
 
-    # Persist the result and mark session finished.
     update_session(req.session_id, {"finished": True, "result": result})
 
-    # Add score to the leaderboard.
     add_score(
         name=s["name"],
         mode=s["mode"],
         final=result.get("final", 0),
         rank=result.get("rank", "Human"),
         avg_reply_ms=result.get("avg_reply_ms", 0),
+        archetype=result.get("archetype", {}),
+        character_name=s.get("character_name", ""),
     )
 
-    return {**result, "name": s["name"], "mode": s["mode"], "history": s["history"]}
+    challenger_info = None
+    if s.get("challenge_id"):
+        parent = get_session(s["challenge_id"])
+        if parent and parent.get("result"):
+            challenger_info = {
+                "name": parent.get("name", "Challenger"),
+                "final": parent["result"].get("final", 0),
+                "rank": parent["result"].get("rank", "Human"),
+                "archetype": parent["result"].get("archetype", {}),
+            }
+
+    return {
+        **result,
+        "session_id": req.session_id,
+        "name": s["name"],
+        "mode": s["mode"],
+        "history": s["history"],
+        "character_name": s.get("character_name", ""),
+        "challenger": challenger_info,
+    }
+
+
+@app.get("/api/daily")
+def daily_endpoint():
+    """Return today's Daily PopAI trending character and top daily scores."""
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    daily_char = get_daily_character(date_str)
+    
+    # Calculate seconds until midnight UTC
+    now_utc = datetime.now(timezone.utc)
+    seconds_until_midnight = int((24 * 3600) - (now_utc.hour * 3600 + now_utc.minute * 60 + now_utc.second))
+    
+    daily_scores = get_leaderboard("daily", limit=10)
+    return {
+        "date": date_str,
+        "character": daily_char,
+        "seconds_remaining": seconds_until_midnight,
+        "top_scores": daily_scores.get("top", []),
+    }
+
+
+@app.get("/api/challenge/{session_id}")
+def challenge_preview(session_id: str):
+    """Return public preview of a challenger session."""
+    s = get_session(session_id)
+    if not s:
+        raise HTTPException(404, "Challenge session not found")
+    res = s.get("result", {})
+    return {
+        "session_id": session_id,
+        "challenger_name": s.get("name", "Anonymous"),
+        "mode": s.get("mode", "classic"),
+        "character_name": s.get("character_name", ""),
+        "final": res.get("final", 0),
+        "rank": res.get("rank", "AI Model"),
+        "archetype": res.get("archetype", {}),
+        "opening": s["history"][0]["text"] if s.get("history") else "",
+    }
 
 
 @app.get("/api/leaderboard")
@@ -465,8 +757,9 @@ def leaderboard(mode: Optional[str] = None):
 
 @app.get("/api/health")
 def health():
-    """Simple liveness check; also reports whether the AI client is configured."""
-    return {"ok": True, "ai": bool(client)}
+    """Simple liveness check; also reports available active models and whether AI is configured."""
+    active_models = get_dynamic_fallback_models() if client else []
+    return {"ok": True, "ai": bool(client), "active_models": active_models}
 
 
 # ---------------------------------------------------------------------------

@@ -39,10 +39,22 @@
         <p class="kicker">THE REVERSE TURING TEST</p>
         <h1>How <span class="grad">artificial</span> are you?</h1>
         <p class="sub">You have 5 minutes to fool an AI. Act like it. Think like it. Respond like it. The AI will grade your performance on accuracy, naturalness, and authenticity. Can you score over 85?</p>
+        <div class="daily-popai-banner" id="dailyBanner" style="display:none;background:linear-gradient(135deg,rgba(124,92,255,0.25),rgba(255,107,107,0.25));border:1px solid rgba(124,92,255,0.5);border-radius:12px;padding:14px 18px;margin-bottom:20px;backdrop-filter:blur(10px)">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <div>
+              <span style="background:#7c5cff;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:0.5px">🔥 TODAY'S POP-CULTURE DAILY</span>
+              <h3 style="margin:6px 0 2px 0;font-size:18px;color:#fff" id="dailyCharTitle">Batman (DC Comics)</h3>
+              <p style="margin:0;font-size:13px;color:var(--muted)" id="dailyTimerText">Resets at Midnight UTC · 24h Event</p>
+            </div>
+            <button id="playDailyBtn" type="button" style="padding:10px 18px;font-size:14px;background:linear-gradient(135deg,#7c5cff,#ff6b6b);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer">Play Daily PopAI →</button>
+          </div>
+        </div>
         <form id="startForm" class="start-form">
           <input id="name" maxlength="24" placeholder="Your Name" autocomplete="off" />
           <select id="mode">
-            <option value="classic">Classic</option>
+            <option value="daily">🔥 Daily PopAI (Pop Culture)</option>
+            <option value="blitz">⚡ Blitz (90s Rapid Test)</option>
+            <option value="classic">Classic (5 mins)</option>
             <option value="interview">Interview</option>
             <option value="chaos">Chaos</option>
             <option value="jailbreak">Jailbreak</option>
@@ -231,6 +243,31 @@
       sessionStorage.setItem('pa_init', JSON.stringify({ name, mode }));
       location.href = '/play';
     });
+
+    async function loadDailyBanner() {
+      try {
+        const r = await fetch('/api/daily');
+        if (!r.ok) return;
+        const data = await r.json();
+        if (data && data.character) {
+          const char = data.character;
+          document.getElementById('dailyBanner').style.display = 'block';
+          const roleText = char.ai_target_role ? ` · Role: ${char.ai_target_role}` : '';
+          document.getElementById('dailyCharTitle').textContent = `${char.name} (${char.source || 'Trending'})` + roleText;
+          
+          const hours = Math.floor(data.seconds_remaining / 3600);
+          const mins = Math.floor((data.seconds_remaining % 3600) / 60);
+          document.getElementById('dailyTimerText').textContent = `${char.ai_role_brief || 'Convince today\'s character you are their AI!'} · Resets in ${hours}h ${mins}m`;
+
+          document.getElementById('playDailyBtn').onclick = () => {
+            const name = document.getElementById('name').value.trim() || 'Anonymous';
+            sessionStorage.setItem('pa_init', JSON.stringify({ name, mode: 'daily' }));
+            location.href = '/play';
+          };
+        }
+      } catch (e) {}
+    }
+    loadDailyBanner();
 
     async function loadLeaderboardPreview() {
       try {
