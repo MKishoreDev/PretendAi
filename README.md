@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **Beta Branch**: This is the **beta** branch containing experimental features (Daily PopAI mode, AI Archetypes, 1v1 Challenges, and Viral UI enhancements). Switch to the [**`main`** branch](https://github.com/MKishoreDev/PretendAi/tree/main) for the stable release.
+
 # 🤖 PretendAI
 
 <p align="center">
